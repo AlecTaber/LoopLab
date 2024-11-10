@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import './App.css'
 
 import NavBar from './components/navbar'
@@ -13,9 +12,9 @@ function App() {
           <NavBar/>
         </div>
 
-        <body>
+        <div>
           <Outlet/>
-        </body>
+        </div>
       </main>
     </>
   )

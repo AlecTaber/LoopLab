@@ -1,6 +1,7 @@
-import { getMaxListeners } from "events";
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
 import { HexColorPicker } from "react-colorful";
+
+import { v4 as uuidv4 } from "uuid"; 
 
 // eslint-disable-next-line
 var canvasWidth = 600 | 0; 
@@ -15,6 +16,11 @@ const CanvasComponent: React.FC = () => {
 
     const [isPainting, setPainting] = useState(false);
     const [isClear, setClear] = useState(false);
+
+    const [activeFrameIndex, setActiveFrameIndex] = useState(0);
+    const [frames, setFrames] = useState<{ id: string, data: ImageData | null, canvasImg?: string }[]>([
+        { id: uuidv4(), data: null, canvasImg: "" }
+    ]);
 
     //handles all selected colors on the page
     const [colorCode, setColorCode] = useState('#000000')
@@ -40,6 +46,47 @@ const CanvasComponent: React.FC = () => {
         setColorCode(value)
     }
 
+    //add a new frame to the frames array
+    const saveCurrentFrameData = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        //set canvas picture
+        const dataUrl = canvas?.toDataURL('image/png')
+
+        const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+        const updatedFrames = [...frames];
+        updatedFrames[activeFrameIndex].data = imageData;
+        updatedFrames[activeFrameIndex].canvasImg = dataUrl
+        setFrames(updatedFrames);
+    };
+
+    const handleNewFrame = () => {
+        saveCurrentFrameData();
+        const newFrame = { id: uuidv4(), data: null };
+        setFrames([...frames, newFrame]);
+        setActiveFrameIndex(frames.length); // Set the new frame as active
+        clearCanvas();
+    };
+
+    const switchFrame = (index: number) => {
+        saveCurrentFrameData();
+        setActiveFrameIndex(index);
+        loadFrameData(frames[index].data);
+    };
+
+    const loadFrameData = (imageData: ImageData | null) => {
+        const canvas = canvasRef.current;
+        if (!canvas || !imageData) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        ctx.putImageData(imageData, 0, 0);
+    };
+
     //draws an initial grid onto the canvas.
     const drawGrid = (ctx: CanvasRenderingContext2D) => {
         for (let x = 0; x < canvasWidth; x += pixelSize) {
@@ -63,6 +110,7 @@ const CanvasComponent: React.FC = () => {
         ctx.fillStyle = colorCode;
         ctx.fillRect(pixelX, pixelY, pixelSize, pixelSize);
 
+        //change this later as to not store such large arrays.
         storeCanvasData(pixelX, pixelY, canvasWidth, canvasHeight);
 
     }
@@ -152,6 +200,16 @@ const CanvasComponent: React.FC = () => {
 
     return (
         <div className="canvasComponentContainer">
+            <div className="framesContainer">
+                {frames.map((frame, index) => (
+                    <button key={frame.id} onClick={() => switchFrame(index)}>
+                        <img src={frame.canvasImg} width="60" height="60"/>
+                        {/* Frame {index + 1} */}
+                    </button>
+                ))}
+                <button onClick={handleNewFrame}>New Frame</button>
+            </div>
+
             <div className="canvasHolder">
                 <canvas id='paintMain' ref={canvasRef} width={canvasWidth} height={canvasHeight} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUpLeave} onMouseLeave={handleMouseUpLeave} style={{ border: '1px solid red' }}></canvas>
 
