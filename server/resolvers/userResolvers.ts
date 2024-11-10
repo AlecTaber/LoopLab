@@ -3,9 +3,23 @@ import User, { IUser } from '../models/User';
 import { generateToken } from '../utils/jwt.js';
 
 const userResolvers = {
+    Query: {
+        me: async (_: any, __: any, { userId }: { userId: string }) => {
+            if (!userId) {
+                throw new Error("Not authenticated");
+            }
+            const user = await
+                User.findById(userId);
+            if (!user) {
+                throw new Error("User not found");
+            }
+            return user;
+        },
+    },
+
     Mutation: {
         register: async (_: any, { username, email, password }: IUser) => {
-            const existingUser = await User.findOne({ 
+            const existingUser = await User.findOne({
                 $or: [
                     { username },
                     { email }
@@ -13,12 +27,12 @@ const userResolvers = {
             });
             if (existingUser) {
                 if (existingUser.email === email) {
-                  throw new Error("Email is already in use");
+                    throw new Error("Email is already in use");
                 }
                 if (existingUser.username === username) {
-                  throw new Error("Username is already in use");
+                    throw new Error("Username is already in use");
                 }
-              };
+            };
             const hashedPassword = await bycrypt.hash(password, 12);
             const newUser = new User({
                 username,
@@ -27,8 +41,8 @@ const userResolvers = {
             });
             await newUser.save();
             const token = generateToken(newUser.id.toString());
-                return {token, user: newUser};
-    },
+            return { token, user: newUser };
+        },
 
         login: async (_: any, { username, password }: IUser) => {
             const user = await User.findOne({ username });
