@@ -4,9 +4,9 @@ import { Server, Socket } from 'socket.io';
 import { ApolloServer } from 'apollo-server-express';
 import connection from './config/connection';
 import { verifyToken } from './utils/jwt';
-
-//import the next line after creating the schema
-//import schema from './schema';
+import userTypeDefs from './typeDefs/userTypeDefs';
+import userResolvers from './resolvers/userResolvers';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 
 const app: Application = express();
 connection();
@@ -24,6 +24,12 @@ io.on('connection', (socket: Socket) => {
     socket.on('disconnect', () => {
         console.log(`User disconnected: ${socket.id}`);
     });
+});
+
+const schema = makeExecutableSchema({
+  typeDefs: [userTypeDefs],
+  resolvers: [userResolvers],
+  // Add further typeDefs and resolvers here
 });
 
 const apolloServer = new ApolloServer({
