@@ -2,10 +2,10 @@ import express, { Application } from 'express';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { ApolloServer } from 'apollo-server-express';
-import connection from './config/connection';
-import { verifyToken } from './utils/jwt';
-import userTypeDefs from './typeDefs/userTypeDefs';
-import userResolvers from './resolvers/userResolvers';
+import connection from './config/connection.js';
+import { verifyToken } from './utils/jwt.js';
+import userTypeDefs from './typeDefs/userTypeDefs.js';
+import userResolvers from './resolvers/userResolvers.js';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
 const app: Application = express();
