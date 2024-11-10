@@ -1,3 +1,4 @@
+import { getMaxListeners } from "events";
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
 import { HexColorPicker } from "react-colorful";
 
@@ -17,6 +18,16 @@ const CanvasComponent: React.FC = () => {
 
     //handles all selected colors on the page
     const [colorCode, setColorCode] = useState('#000000')
+
+    const storeCanvasData = (x: number, y: number, pixelSize1: number, pixelSize2: number) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const currentPixel = ctx.getImageData(x, y, pixelSize1, pixelSize2)
+        console.log('Current Pixel:', currentPixel);
+    }
 
 
     const changeColor = (color: string) => {
@@ -47,10 +58,13 @@ const CanvasComponent: React.FC = () => {
         const pixelX = Math.floor(x / pixelSize) * pixelSize
         const pixelY = Math.floor(y / pixelSize) * pixelSize;
 
-
+        console.log("Coordinates:", pixelX, pixelY)
 
         ctx.fillStyle = colorCode;
         ctx.fillRect(pixelX, pixelY, pixelSize, pixelSize);
+
+        storeCanvasData(pixelX, pixelY, canvasWidth, canvasHeight);
+
     }
 
     const erasePixel = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
@@ -164,6 +178,10 @@ const CanvasComponent: React.FC = () => {
                     <button className='clear'onClick={clearCanvas}>Clear</button>
                     <button className='erase'onClick={() => setClear(true)}>Eraser</button>
                 </div>
+
+                {/* <div>
+                    <button onClick={printCanvasArray}>Show Canvas Array</button>
+                </div> */}
             </div>
 
 
