@@ -2,6 +2,10 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "baseUrl": "./",                  // Base directory to resolve non-absolute module names
+    "paths": {
+      "express": ["./node_modules/@types/express"]
+    },
     "outDir": "../dist",       // Where the compiled files go
     "rootDir": "./",                  // Ensure rootDir is the current folder
     "moduleResolution": "node"        // Node.js module resolution
