@@ -1,5 +1,5 @@
 import bycrypt from 'bcryptjs';
-import User, { IUser } from '../models/User.js';
+import User, { IUser } from '../models/User';
 import { generateToken } from '../utils/jwt.js';
 
 const userResolvers = {
