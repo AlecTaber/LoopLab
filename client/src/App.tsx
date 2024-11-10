@@ -1,14 +1,24 @@
-
-import React from 'react'
+import { useState } from 'react'
 import './App.css'
-import './index.css'
+
+import NavBar from './components/navbar'
+import { Outlet } from 'react-router-dom'
 
 function App() {
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold underline text-center text-blue-500">Hello world!</h1>
-    </div>
-  );
+    <>
+      <main>
+        <div>
+          <NavBar/>
+        </div>
+
+        <body>
+          <Outlet/>
+        </body>
+      </main>
+    </>
+  )
 }
 
 export default App;
