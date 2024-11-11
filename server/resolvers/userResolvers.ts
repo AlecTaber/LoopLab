@@ -44,18 +44,30 @@ const userResolvers = {
             return { token, user: newUser };
         },
 
-        login: async (_: any, { username, password }: IUser) => {
-            const user = await User.findOne({ username });
-            if (!user) {
+        login: async (_: any, { email, password }: { email: string; password: string }) => {
+            const normalizedEmail = email.toLowerCase();
+            console.log("Attempting to log in with email:", normalizedEmail);
+        
+            // Test querying MongoDB directly
+            const testUser = await User.findOne({ email: normalizedEmail });
+            console.log("Direct query result:", testUser);  // Check if MongoDB returns any result at all
+        
+            if (!testUser) {
+                console.log("User not found with email:", normalizedEmail);
                 throw new Error("User not found");
             }
-            const passwordMatch = await bycrypt.compare(password, user.password);
+        
+            const passwordMatch = await bycrypt.compare(password, testUser.password);
             if (!passwordMatch) {
+                console.log("Password does not match for user:", testUser.username);
                 throw new Error("Invalid password");
             }
-            const token = generateToken(user.id.toString());
-            return { token, user };
+        
+            const token = generateToken(testUser.id.toString());
+            return { token, user: testUser };
         }
+        
+        
     }
 };
 
