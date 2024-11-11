@@ -8,7 +8,6 @@ var canvasWidth = 600 | 0;
 // eslint-disable-next-line
 var canvasHeight = 600 | 0;
 
-
 //should update the page depending on which pixel was clicked on.
 const CanvasComponent: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -20,7 +19,7 @@ const CanvasComponent: React.FC = () => {
 
     const [activeFrameIndex, setActiveFrameIndex] = useState(0);
     const [frames, setFrames] = useState<{ id: string, data: ImageData | null, canvasImg?: string }[]>([
-        { id: uuidv4(), data: null, canvasImg: "" }
+        { id: uuidv4(), data: null, canvasImg: ""}
     ]);
 
 
@@ -36,11 +35,11 @@ const CanvasComponent: React.FC = () => {
     const storeCanvasData = (x: number, y: number, pixelSize1: number, pixelSize2: number) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
-        const currentPixel = ctx.getImageData(x, y, pixelSize1, pixelSize2)
-        console.log('Current Pixel:', currentPixel);
+        // const currentPixel = ctx.getImageData(x, y, pixelSize1, pixelSize2)
+        // console.log('Current Pixel:', currentPixel);
     }
 
 
@@ -64,15 +63,15 @@ const CanvasComponent: React.FC = () => {
     const saveCurrentFrameData = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
-
-        //set canvas picture
-        const dataUrl = canvas?.toDataURL('image/png')
 
         const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
         const updatedFrames = [...frames];
         updatedFrames[activeFrameIndex].data = imageData;
+
+        //set canvas picture
+        const dataUrl = canvas?.toDataURL('image/png')
         updatedFrames[activeFrameIndex].canvasImg = dataUrl
         setFrames(updatedFrames);
     };
@@ -94,7 +93,7 @@ const CanvasComponent: React.FC = () => {
     const loadFrameData = (imageData: ImageData | null) => {
         const canvas = canvasRef.current;
         if (!canvas || !imageData) return;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -166,7 +165,7 @@ const CanvasComponent: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         // Grabs the canvas's bounding retangle and the mouse click Coordinates
@@ -191,7 +190,7 @@ const CanvasComponent: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         const rect = canvas.getBoundingClientRect();
@@ -212,7 +211,7 @@ const CanvasComponent: React.FC = () => {
     };
 
     const clearCanvas = () => {
-        const ctx = canvasRef.current?.getContext('2d');
+        const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         //clear the grid completly
@@ -252,17 +251,18 @@ const CanvasComponent: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         drawGrid(ctx);
+        saveCurrentFrameData();
     }, []);
 
     return (
         <div className="canvasComponentContainer">
             <div className="framesContainer">
                 {frames.map((frame, index) => (
-                    <button key={frame.id} onClick={() => switchFrame(index)}>
+                    <button key={frame.id} onClick={() => switchFrame(index)} disabled={isPlaying}>
                         <img src={frame.canvasImg} width="60" height="60"/>
                     </button>
                 ))}
