@@ -35,16 +35,11 @@ const schema = makeExecutableSchema({
 const apolloServer = new ApolloServer({
   schema,
   context: ({ req }) => {
-    const token = req.headers.authorization || '';
-    try {
-      const payload = verifyToken(token);
-      const userId = payload.userId;
-      console.log('User ID:', userId);
-      return { userId };
-    } catch (error) {
-      console.error('Error:', error);
-      return error;
-    }
+    const token = req.headers.authorization?.split(" ")[1] || '';
+    const payload = verifyToken(token);
+    const userId = payload ? payload.userId : null; // Safely handle null payload
+    console.log('User ID:', userId);
+    return { userId };
   },
 });
 
