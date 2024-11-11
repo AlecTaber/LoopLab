@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, ChangeEvent } from "react"
 import { HexColorPicker } from "react-colorful";
 
 import { v4 as uuidv4 } from "uuid"; 
+import saveFlipBook from "./canvasTools/canvasSave";
 
 // eslint-disable-next-line
 var canvasWidth = 600 | 0; 
@@ -32,32 +33,31 @@ const CanvasComponent: React.FC = () => {
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const storeCanvasData = (x: number, y: number, pixelSize1: number, pixelSize2: number) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        if (!ctx) return;
-
-        // const currentPixel = ctx.getImageData(x, y, pixelSize1, pixelSize2)
-        // console.log('Current Pixel:', currentPixel);
-    }
+    const handleFlipbookSave = async () => {
+        try {
+            const flipBookData = await saveFlipBook(frames, "flipBook Title")
+            console.log("FlipBook Saved Successfully:", flipBookData)
+        } catch (err: any){
+            console.error("Failed to save flipbook:", err);
+        }
+    };
 
 
     const changeColor = (color: string) => {
         setColorCode(color)
         return colorCode
-    }
+    };
 
     const changeColorCode = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { value } = e.target;
         setColorCode(value)
-    }
+    };
 
     const handleBrushSizeChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { value} = e.target;
         const valueInt = parseInt(value)
         setBrushSize(valueInt)
-    }
+    };
 
     //add a new frame to the frames array
     const saveCurrentFrameData = () => {
@@ -121,10 +121,6 @@ const CanvasComponent: React.FC = () => {
         ctx.fillStyle = colorCode;
         const trueBrushSize = brushSize * pixelSize
         ctx.fillRect(pixelX, pixelY, trueBrushSize, trueBrushSize);
-
-        //change this later as to not store such large arrays.
-        storeCanvasData(pixelX, pixelY, canvasWidth, canvasHeight);
-
     }
 
     // Helper function to draw a line between two points
@@ -159,7 +155,7 @@ const CanvasComponent: React.FC = () => {
 
         ctx.strokeStyle = '#cccccc';
         ctx.strokeRect(pixelX, pixelY, pixelSize, pixelSize)
-    }
+    };
 
     const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
@@ -182,7 +178,7 @@ const CanvasComponent: React.FC = () => {
 
         setPreviousMousePosition({ x, y });
         setPainting(true);
-    }
+    };
 
     const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
         if (!isPainting) return;
@@ -204,7 +200,7 @@ const CanvasComponent: React.FC = () => {
         }
 
         setPreviousMousePosition({ x, y });
-    }
+    };
 
     const handleMouseUpLeave = () => {
         setPainting(false);
@@ -218,7 +214,7 @@ const CanvasComponent: React.FC = () => {
         ctx.clearRect(0, 0, canvasHeight, canvasWidth);
         //redraw the grid
         drawGrid(ctx)
-    }
+    };
 
     const playAnimation = () => {
         if (isPlaying) {
@@ -292,6 +288,10 @@ const CanvasComponent: React.FC = () => {
                     <button className='clear'onClick={clearCanvas}>Clear</button>
                     <button className='erase'onClick={() => setClear(true)}>Eraser</button>
                     <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                </div>
+
+                <div>
+                    <button className="saveFlipbook" onClick={handleFlipbookSave}>Save Flipbook</button>
                 </div>
             </div>
 
