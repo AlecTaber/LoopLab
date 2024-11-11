@@ -6,7 +6,7 @@
     "paths": {
       "express": ["./node_modules/@types/express"]
     },
-    "outDir": "../dist",       // Where the compiled files go
+    "outDir": "./dist",       // Where the compiled files go
     "rootDir": "./",                  // Ensure rootDir is the current folder
     "moduleResolution": "node"        // Node.js module resolution
   },
