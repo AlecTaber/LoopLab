@@ -15,6 +15,7 @@ const CanvasComponent: React.FC = () => {
     const pixelSize = 10;
 
     const [isPainting, setPainting] = useState(false);
+    const [previousMousePosition, setPreviousMousePosition] = useState<{ x: number; y: number} | null>(null);
     const [isClear, setClear] = useState(false);
 
     const [activeFrameIndex, setActiveFrameIndex] = useState(0);
@@ -27,6 +28,10 @@ const CanvasComponent: React.FC = () => {
     const [colorCode, setColorCode] = useState('#000000')
     //handles all pixel sizes
     const [brushSize, setBrushSize] = useState(1);
+
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
+    const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const storeCanvasData = (x: number, y: number, pixelSize1: number, pixelSize2: number) => {
         const canvas = canvasRef.current;
@@ -123,6 +128,24 @@ const CanvasComponent: React.FC = () => {
 
     }
 
+    // Helper function to draw a line between two points
+    const drawLine = (ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number) => {
+        const dx = Math.abs(x1 - x0);
+        const dy = Math.abs(y1 - y0);
+        const sx = x0 < x1 ? 1 : -1;
+        const sy = y0 < y1 ? 1 : -1;
+        let err = dx - dy;
+
+        while (true) {
+            drawPixel(ctx, x0, y0);
+
+            if (x0 === x1 && y0 === y1) break;
+            const e2 = err * 2;
+            if (e2 > -dy) { err -= dy; x0 += sx; }
+            if (e2 < dx) { err += dx; y0 += sy; }
+        }
+    };
+
     const erasePixel = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
         //grab the mouse canvas coordinates
         const pixelX = Math.floor(x / pixelSize) * pixelSize;
@@ -154,11 +177,12 @@ const CanvasComponent: React.FC = () => {
         //if the eraser is activated then set pixels to clear
         if (isClear) {
             erasePixel(ctx, x, y)
-            setPainting(true);
         } else {
             drawPixel(ctx, x, y);
-            setPainting(true);
         }
+
+        setPreviousMousePosition({ x, y });
+        setPainting(true);
     }
 
     const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -177,8 +201,10 @@ const CanvasComponent: React.FC = () => {
         if (isClear) {
             erasePixel(ctx, x, y)
         } else {
-            drawPixel(ctx, x, y)
+            drawLine(ctx, previousMousePosition!.x, previousMousePosition!.y, x, y)
         }
+
+        setPreviousMousePosition({ x, y });
     }
 
     const handleMouseUpLeave = () => {
@@ -194,6 +220,32 @@ const CanvasComponent: React.FC = () => {
         //redraw the grid
         drawGrid(ctx)
     }
+
+    const playAnimation = () => {
+        if (isPlaying) {
+            stopAnimation();
+            return;
+        }
+
+        setIsPlaying(true);
+        let frameIndex = 0;
+
+        animationIntervalRef.current = setInterval(() => {
+            if (frameIndex >= frames.length) frameIndex = 0;
+            loadFrameData(frames[frameIndex].data);
+            frameIndex++;
+        }, animationSpeed);
+    };
+
+    const stopAnimation = () => {
+        setIsPlaying(false);
+        if (animationIntervalRef.current) {
+            clearInterval(animationIntervalRef.current);
+            animationIntervalRef.current = null;
+        }
+        // Load the currently active frame
+        loadFrameData(frames[activeFrameIndex].data);
+    };
 
 
     useEffect(() => {
@@ -239,6 +291,7 @@ const CanvasComponent: React.FC = () => {
                 <div className="clear-erase">
                     <button className='clear'onClick={clearCanvas}>Clear</button>
                     <button className='erase'onClick={() => setClear(true)}>Eraser</button>
+                    <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
                 </div>
             </div>
 
