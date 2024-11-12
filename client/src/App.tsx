@@ -1,23 +1,15 @@
-import './App.css'
-
-import NavBar from './components/navbar'
-import { Outlet } from 'react-router-dom'
+import './App.css';
+import NavBar from './components/navbar';
+import React from 'react';
+import { Outlet } from 'react-router-dom';
 
 function App() {
-
   return (
-    <>
-      <main>
-        <div>
-          <NavBar/>
-        </div>
-
-        <div>
-          <Outlet/>
-        </div>
-      </main>
-    </>
-  )
+    <div>
+      <NavBar />
+      <Outlet /> {/* This will render child routes, like HomePage and CanvasPage */}
+    </div>
+  );
 }
 
 export default App;
