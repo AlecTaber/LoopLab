@@ -6,6 +6,8 @@ import connection from './config/connection.js';
 import { verifyToken } from './utils/jwt.js';
 import userTypeDefs from './typeDefs/userTypeDefs.js';
 import userResolvers from './resolvers/userResolvers.js';
+import commentTypeDefs from 'typeDefs/commentTypeDefs.js';
+import commentResolvers from 'resolvers/commentResolvers.js';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import dotenv from 'dotenv';
 
@@ -33,8 +35,8 @@ io.on('connection', (socket: Socket) => {
 
 // Define GraphQL schema
 const schema = makeExecutableSchema({
-  typeDefs: [userTypeDefs],
-  resolvers: [userResolvers],
+  typeDefs: [userTypeDefs, commentTypeDefs],
+  resolvers: [userResolvers, commentResolvers],
 });
 
 const apolloServer = new ApolloServer({
