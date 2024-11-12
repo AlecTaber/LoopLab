@@ -1,8 +1,6 @@
 import { useMutation } from '@apollo/client';
 import {SAVE_FLIPBOOK} from '../mutations.ts'
 
-const [saveFlipbook] = useMutation(SAVE_FLIPBOOK)
-
 // Define a type for frame data
 interface FrameData {
     id: string;
@@ -12,6 +10,7 @@ interface FrameData {
 
 // The function to save the flipbook animation
 export default async function saveFlipBook(frames: FrameData[], title: string) {
+  const [saveFlipbook] = useMutation(SAVE_FLIPBOOK)
     try {
       // Format the frames data to only include the essential fields
       const formattedFrames = frames.map(frame => ({
