@@ -6,6 +6,8 @@ import App from './App.tsx'
 import HomePage from './pages/homePage.tsx'
 import CanvasPage from './pages/canvasPage.tsx'
 import Error from './pages/errorPage.tsx'
+import Login from './components/Login.tsx'
+import Register from './components/Register.tsx'
 
 const router = createBrowserRouter([
   {
@@ -20,6 +22,14 @@ const router = createBrowserRouter([
       {
         path: '/canvas',
         element: <CanvasPage/>
+      },
+      {
+        path: 'login',
+        element: <Login />
+      },
+      {
+        path: 'register',
+        element: <Register />
       }
     ]
   }
