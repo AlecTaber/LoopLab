@@ -1,6 +1,4 @@
-import Comment, { IComment } from '../models/Comment.js';
-import User, { IUser } from '../models/User.js';
-//import Post, { IPost } from '../models/Post.js';
+import Comment from '../models/Comment.js';
 import { getUserDataFromToken } from '../utils/auth.js';
 
 const commentResolvers = {
