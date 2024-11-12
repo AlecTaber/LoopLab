@@ -6,8 +6,8 @@ import connection from './config/connection.js';
 import { verifyToken } from './utils/jwt.js';
 import userTypeDefs from './typeDefs/userTypeDefs.js';
 import userResolvers from './resolvers/userResolvers.js';
-import commentTypeDefs from 'typeDefs/commentTypeDefs.js';
-import commentResolvers from 'resolvers/commentResolvers.js';
+import commentTypeDefs from './typeDefs/commentTypeDefs.js';
+import commentResolvers from './resolvers/commentResolvers.js';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import dotenv from 'dotenv';
 
