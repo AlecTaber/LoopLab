@@ -7,9 +7,15 @@ import { verifyToken } from './utils/jwt.js';
 import userTypeDefs from './typeDefs/userTypeDefs.js';
 import userResolvers from './resolvers/userResolvers.js';
 import { makeExecutableSchema } from '@graphql-tools/schema';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app: Application = express();
+
+// Initialize MongoDB Atlas connection
 connection();
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
@@ -20,41 +26,36 @@ const io = new Server(httpServer, {
 
 io.on('connection', (socket: Socket) => {
     console.log(`User connected: ${socket.id}`);
-
     socket.on('disconnect', () => {
         console.log(`User disconnected: ${socket.id}`);
     });
 });
 
+// Define GraphQL schema
 const schema = makeExecutableSchema({
   typeDefs: [userTypeDefs],
   resolvers: [userResolvers],
-  // Add further typeDefs and resolvers here
 });
 
 const apolloServer = new ApolloServer({
   schema,
   context: ({ req }) => {
-    const token = req.headers.authorization || '';
-    try {
-      const payload = verifyToken(token);
-      const userId = payload.userId;
-      console.log('User ID:', userId);
-      return { userId };
-    } catch (error) {
-      console.error('Error:', error);
-      return error;
-    }
+    const token = req.headers.authorization?.split(" ")[1] || '';
+    const payload = verifyToken(token);
+    const userId = payload ? payload.userId : null;
+    console.log('User ID:', userId);
+    return { userId };
   },
 });
 
-await apolloServer.start();
+// Start the Apollo Server and apply it to the Express app
+(async function startServer() {
+  await apolloServer.start();
+  apolloServer.applyMiddleware({ app, path: '/graphql' });
 
-apolloServer.applyMiddleware({ app, path: '/graphql' });
-
-const PORT = process.env.PORT || 3001;
-
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`GraphQL server running on http://localhost:${PORT}${apolloServer.graphqlPath}`);
-});
+  const PORT: number = parseInt(process.env.PORT || '3001', 10);
+  httpServer.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`GraphQL server running on http://localhost:${PORT}${apolloServer.graphqlPath}`);
+  });
+})();

@@ -1,13 +1,15 @@
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
+import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
+import { SAVE_FLIPBOOK } from "./mutations";
 
 import { v4 as uuidv4 } from "uuid"; 
+import saveFlipBook from "./canvasTools/canvasSave";
 
 // eslint-disable-next-line
 var canvasWidth = 600 | 0; 
 // eslint-disable-next-line
 var canvasHeight = 600 | 0;
-
 
 //should update the page depending on which pixel was clicked on.
 const CanvasComponent: React.FC = () => {
@@ -20,7 +22,7 @@ const CanvasComponent: React.FC = () => {
 
     const [activeFrameIndex, setActiveFrameIndex] = useState(0);
     const [frames, setFrames] = useState<{ id: string, data: ImageData | null, canvasImg?: string }[]>([
-        { id: uuidv4(), data: null, canvasImg: "" }
+        { id: uuidv4(), data: null, canvasImg: ""}
     ]);
 
 
@@ -32,47 +34,47 @@ const CanvasComponent: React.FC = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    
 
-    const storeCanvasData = (x: number, y: number, pixelSize1: number, pixelSize2: number) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        const currentPixel = ctx.getImageData(x, y, pixelSize1, pixelSize2)
-        console.log('Current Pixel:', currentPixel);
-    }
+    const handleFlipbookSave = async () => {
+        try {
+            const flipBookData = await saveFlipBook(frames, "flipBook Title")
+            console.log("FlipBook Saved Successfully:", flipBookData)
+        } catch (err: any){
+            console.error("Failed to save flipbook:", err);
+        }
+    };
 
 
     const changeColor = (color: string) => {
         setColorCode(color)
         return colorCode
-    }
+    };
 
     const changeColorCode = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { value } = e.target;
         setColorCode(value)
-    }
+    };
 
     const handleBrushSizeChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { value} = e.target;
         const valueInt = parseInt(value)
         setBrushSize(valueInt)
-    }
+    };
 
     //add a new frame to the frames array
     const saveCurrentFrameData = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
-
-        //set canvas picture
-        const dataUrl = canvas?.toDataURL('image/png')
 
         const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
         const updatedFrames = [...frames];
         updatedFrames[activeFrameIndex].data = imageData;
+
+        //set canvas picture
+        const dataUrl = canvas?.toDataURL('image/png')
         updatedFrames[activeFrameIndex].canvasImg = dataUrl
         setFrames(updatedFrames);
     };
@@ -94,7 +96,7 @@ const CanvasComponent: React.FC = () => {
     const loadFrameData = (imageData: ImageData | null) => {
         const canvas = canvasRef.current;
         if (!canvas || !imageData) return;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -122,10 +124,6 @@ const CanvasComponent: React.FC = () => {
         ctx.fillStyle = colorCode;
         const trueBrushSize = brushSize * pixelSize
         ctx.fillRect(pixelX, pixelY, trueBrushSize, trueBrushSize);
-
-        //change this later as to not store such large arrays.
-        storeCanvasData(pixelX, pixelY, canvasWidth, canvasHeight);
-
     }
 
     // Helper function to draw a line between two points
@@ -160,13 +158,13 @@ const CanvasComponent: React.FC = () => {
 
         ctx.strokeStyle = '#cccccc';
         ctx.strokeRect(pixelX, pixelY, pixelSize, pixelSize)
-    }
+    };
 
     const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         // Grabs the canvas's bounding retangle and the mouse click Coordinates
@@ -183,7 +181,7 @@ const CanvasComponent: React.FC = () => {
 
         setPreviousMousePosition({ x, y });
         setPainting(true);
-    }
+    };
 
     const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
         if (!isPainting) return;
@@ -191,7 +189,7 @@ const CanvasComponent: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         const rect = canvas.getBoundingClientRect();
@@ -205,21 +203,21 @@ const CanvasComponent: React.FC = () => {
         }
 
         setPreviousMousePosition({ x, y });
-    }
+    };
 
     const handleMouseUpLeave = () => {
         setPainting(false);
     };
 
     const clearCanvas = () => {
-        const ctx = canvasRef.current?.getContext('2d');
+        const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         //clear the grid completly
         ctx.clearRect(0, 0, canvasHeight, canvasWidth);
         //redraw the grid
         drawGrid(ctx)
-    }
+    };
 
     const playAnimation = () => {
         if (isPlaying) {
@@ -252,17 +250,18 @@ const CanvasComponent: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
         drawGrid(ctx);
+        saveCurrentFrameData();
     }, []);
 
     return (
         <div className="canvasComponentContainer">
             <div className="framesContainer">
                 {frames.map((frame, index) => (
-                    <button key={frame.id} onClick={() => switchFrame(index)}>
+                    <button key={frame.id} onClick={() => switchFrame(index)} disabled={isPlaying}>
                         <img src={frame.canvasImg} width="60" height="60"/>
                     </button>
                 ))}
@@ -292,6 +291,10 @@ const CanvasComponent: React.FC = () => {
                     <button className='clear'onClick={clearCanvas}>Clear</button>
                     <button className='erase'onClick={() => setClear(true)}>Eraser</button>
                     <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                </div>
+
+                <div>
+                    <button className="saveFlipbook" onClick={handleFlipbookSave}>Save Flipbook</button>
                 </div>
             </div>
 
