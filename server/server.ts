@@ -45,7 +45,6 @@ const apolloServer = new ApolloServer({
     const token = req.headers.authorization?.split(" ")[1] || '';
     const payload = verifyToken(token);
     const userId = payload ? payload.userId : null;
-    console.log('User ID:', userId);
     return { userId };
   },
 });
