@@ -1,0 +1,22 @@
+
+/* client/src/pages/HomePage.css */
+
+.homepage-container {
+    @apply flex flex-col items-center pt-8 bg-blue-100 min-h-screen;
+  }
+  
+  .homepage-heading {
+    @apply text-4xl font-bold text-blue-600 mt-2;
+  }
+  
+  .homepage-paragraph {
+    @apply text-gray-700 mt-2;
+  }
+  
+  .homepage-button {
+    @apply mt-6 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700;
+  }
+  
+  .homepage-navBar {
+    @apply px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-900;
+  }
