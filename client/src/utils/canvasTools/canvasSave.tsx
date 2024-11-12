@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useMutation } from '@apollo/client';
+import {SAVE_FLIPBOOK} from '../mutations.ts'
+
+const [saveFlipbook] = useMutation(SAVE_FLIPBOOK)
 
 // Define a type for frame data
 interface FrameData {
@@ -17,40 +20,14 @@ export default async function saveFlipBook(frames: FrameData[], title: string) {
         data: frame.data ? frame.data.data : null, // Convert ImageData if needed
       }));
   
-      // Run the mutation
-      // const result = await client.mutate({
-      //   mutation: SAVE_FLIPBOOK_MUTATION,
-      //   variables: { frames: formattedFrames, title },
-      // });
+    // save the flipbook
+      await saveFlipbook({
+        variables: {frames: {...formattedFrames}, title}
+      })
   
-    //   return result.data.saveFlipbook;
-    } catch (error) {
-      console.error("Error saving flipbook:", error);
-      throw error;
+    } catch (err: any) {
+      console.error("Error saving flipbook:", err);
+      throw err;
     }
   };
 
-// import { gql } from '@apollo/client';
-// import client from '../graphql/client'; // Import your GraphQL client
-
-// Define the GraphQL mutation
-// const SAVE_FLIPBOOK_MUTATION = gql`
-//   mutation SaveFlipbook($frames: [FrameInput!]!, $title: String) {
-//     saveFlipbook(frames: $frames, title: $title) {
-//       id
-//       title
-//       frames {
-//         id
-//         canvasImg
-//         data
-//       }
-//     }
-//   }
-// `;
-
-
-
-
-
-
-// export default saveFlipBook;
