@@ -30,10 +30,11 @@ export const ADD_USER = gql`
 export const SAVE_FLIPBOOK = gql`
   mutation SaveFlipbook($frames: [FrameInput!]!, $title: String) {
     saveFlipbook(frames: $frames, title: $title) {
-      id
+      _id
+      loopId
       title
       frames {
-        id
+        frameId
         canvasImg
         data
       }
