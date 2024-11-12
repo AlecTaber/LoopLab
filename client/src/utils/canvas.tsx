@@ -1,5 +1,7 @@
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
+import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
+import { SAVE_FLIPBOOK } from "./mutations";
 
 import { v4 as uuidv4 } from "uuid"; 
 import saveFlipBook from "./canvasTools/canvasSave";
@@ -32,6 +34,7 @@ const CanvasComponent: React.FC = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    
 
     const handleFlipbookSave = async () => {
         try {

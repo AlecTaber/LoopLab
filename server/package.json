@@ -7,7 +7,7 @@
     "scripts": {
         "build": "tsc",
         "seed": "node dist/seeds/seed.js",
-        "start": "cd.. && node dist/server.js",
+        "start": "cd. && node dist/server.js",
         "watch": "nodemon dist/server.js",
         "test": "vitest"
     },
@@ -15,12 +15,18 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "apollo-server-express": "^3.13.0",
+        "jsonwebtoken": "^9.0.2",
+        "graphql": "^16.9.0",
         "express": "^4.19.2",
-        "mongoose": "^8.0.0"
+        "mongoose": "^8.0.0",
+        "ts-node": "^10.9.2"
     },
     "devDependencies": {
         "@types/express": "^4.17.21",
         "@types/node": "^20.14.8",
+        "@types/bcryptjs": "^2.4.6",
+        "@types/jsonwebtoken": "^9.0.7",
         "dotenv": "^16.4.5",
         "msw": "^2.3.1",
         "nodemon": "^3.1.0",
