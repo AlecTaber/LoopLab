@@ -73,6 +73,28 @@ const commentResolvers = {
             await comment.save();
 
             return comment;
+        },
+
+        deleteComment: async (_: any, { input }: { input: { id: string } }) => {
+            const { id } = input;
+
+            const user = getUserDataFromToken();
+            if (!user) {
+                throw new Error("Not authenticated");
+            }
+
+            const comment = await Comment.findById(id);
+            if (!comment) {
+                throw new Error("Comment not found");
+            }
+
+            if (comment.userId !== user.userId) {
+                throw new Error("Not authorized to delete comment");
+            }
+
+            await Comment.findByIdAndDelete(id);
+
+            return { message: "Comment deleted successfully" };
         }
     }
 };
