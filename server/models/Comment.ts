@@ -2,7 +2,7 @@ import mongoose, {Document, Types, Schema} from "mongoose";
 
 export interface IComment extends Document {
   username: string;
-  commentBody: string;
+  body: string;
   //References to models to help link Mongo models
   userId: Types.ObjectId;
   //postId: Types.ObjectId;
@@ -10,7 +10,7 @@ export interface IComment extends Document {
 
 const commentSchema = new Schema<IComment>({
     username: { type: String, required: true },
-    commentBody: { type: String, required: true },
+    body: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     //postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
     });

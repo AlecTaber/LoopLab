@@ -49,8 +49,31 @@ const commentResolvers = {
         await post.save();
       }*/
 
-      return comment;
-    },
+            return comment;
+        },
+
+        editComment: async (_: any, { input }: { input: { id: string, body: string } }) => {
+            const { id, body } = input;
+
+            const user = getUserDataFromToken();
+            if (!user) {
+                throw new Error("Not authenticated");
+            }
+
+            const comment = await Comment.findById(id);
+            if (!comment) {
+                throw new Error("Comment not found");
+            }
+
+            if (comment.userId !== user.userId) {
+                throw new Error("Not authorized to edit comment");
+            }
+
+            comment.body = body;
+            await comment.save();
+
+            return comment;
+        }
     }
 };
 

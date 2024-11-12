@@ -16,9 +16,14 @@ const commentTypeDefs = gql`
 
     type Mutation {
       createComment(input: CreateCommentInput): Comment!
+      deleteComment(input: EditCommentInput): Comment!
     }
 
     input CreateCommentInput {
+      body: String!
+    }
+
+    input EditCommentInput {
       body: String!
     }
     `;

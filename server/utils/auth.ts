@@ -4,7 +4,8 @@ export const getUserDataFromToken = () => {
   const token = localStorage.getItem('authToken');
   if (token) {
     try {
-      const decoded = jwtDecode(token);
+      const decoded = (jwtDecode as any)(token);
+      
       return {
         userId: decoded.userId,
         username: decoded.username
