@@ -6,10 +6,11 @@
     "type": "module",
     "scripts": {
         "build": "tsc",
-        "seed": "node dist/seeds/seed.js",
+        "seed": "node dist/seeds/seeds.js",
         "start": "cd. && node dist/server.js",
         "watch": "nodemon dist/server.js",
-        "test": "vitest"
+        "test": "vitest",
+        "clean": "node dist/seeds/cleanDb.js"
     },
     "keywords": [],
     "author": "",
