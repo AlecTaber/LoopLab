@@ -16,7 +16,7 @@ const HomePage: React.FC = () => {
   return (
     <div className="homepage-container">
       <h2 className="homepage-heading">Welcome to LoopLab!</h2>
-      <p className="homepage-paragraph">Your next break through is a scetch away.</p>
+      <p className="homepage-paragraph">Your next break through is a sketch away.</p>
     </div>
   );
 };
