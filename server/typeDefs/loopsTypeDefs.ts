@@ -3,13 +3,24 @@ import { gql } from 'apollo-server-express';
 const loopTypeDefs = gql`
     type Loop {
         id: ID!
-        loopId: any,
+        loopId: String,
         title: String,
-        frames: {
-            frameId: any,
-            canvasImg: String,
-            data: any
-        }
+        frames: [Frame]
+    }
+
+    type Frame {
+        frameId: String
+        canvasImg: String
+        data: [[Int]]
+    }
+    
+    input FrameInput {
+        frameId: String
+        canvasImg: String
+        data: [Int]
+        width: Int
+        height: Int
+        colorSpace: String
     }
 
     type Query {
@@ -17,16 +28,9 @@ const loopTypeDefs = gql`
     }
 
     type Mutation {
-        createLoop(frames: CreateLoopsInput): Loop!
+        createLoop(frames: [FrameInput]!, title: String!): Loop!
     }
 
-    input CreateLoopsInput {
-        frames: {
-            frameId: any,
-            canvasImg: String
-            data: any
-        }
-    }
 `
 
 export default loopTypeDefs;

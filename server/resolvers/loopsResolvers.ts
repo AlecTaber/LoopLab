@@ -1,5 +1,5 @@
-import Loop from "models/loop";
-import { getUserDataFromToken } from "utils/auth";
+import Loop from "../models/loop.js";
+import { getUserDataFromToken } from "../utils/auth.js";
 
 const loopResolvers = {
     Query: {
@@ -14,10 +14,9 @@ const loopResolvers = {
     },
 
     Mutation: {
-        createLoop: async (_:any, {frames}: {frames: {frameId: any, canvasImg: string, data: any}}) => {
-        const {frameId, canvasImg, data} = frames;
-
+        createLoop: async (_:any, {frames, title}: any) => {
         const user = getUserDataFromToken();
+
         if(!user){
             throw new Error("User not authenticated.");
         }
@@ -25,11 +24,8 @@ const loopResolvers = {
         const { userId } = user;
         const loop = new Loop({
             userId,
-            frames: {
-                frameId,
-                canvasImg,
-                data,
-            }
+            title,
+            frames
         });
 
         await loop.save();

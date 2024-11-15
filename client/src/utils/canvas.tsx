@@ -4,12 +4,12 @@ import { HexColorPicker } from "react-colorful";
 import { SAVE_FLIPBOOK } from "./mutations";
 
 import { v4 as uuidv4 } from "uuid"; 
-import saveFlipBook from "./canvasTools/canvasSave";
+// import saveFlipBook from "./canvasTools/canvasSave";
 
 // eslint-disable-next-line
-var canvasWidth = 600 | 0; 
+var canvasWidth = 500 | 0; 
 // eslint-disable-next-line
-var canvasHeight = 600 | 0;
+var canvasHeight = 400 | 0;
 
 //should update the page depending on which pixel was clicked on.
 const CanvasComponent: React.FC = () => {
@@ -34,11 +34,32 @@ const CanvasComponent: React.FC = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const [saveFlipbook] = useMutation(SAVE_FLIPBOOK)
     
 
     const handleFlipbookSave = async () => {
+        console.log("Flipbook Data:", frames)
+        const blob = new Blob([JSON.stringify(frames)]);
+        const sizeInBytes = blob.size;
+        console.log("Size in bytes:", sizeInBytes)
+
         try {
-            const flipBookData = await saveFlipBook(frames, "flipBook Title")
+            const formattedFrames = frames.map(frame => ({
+                frameId: frame.id,
+                canvasImg: frame.canvasImg,
+                data: frame.data?.data ? Array.from(frame.data.data) : null,// Convert ImageData if needed
+                width: frame.data?.width || 0,
+                height: frame.data?.height || 0,
+                colorSpace: frame.data?.colorSpace || 'srgb',
+            }));
+
+            const title = "My title!"
+
+            const flipBookData = await saveFlipbook({
+                variables: {frames: formattedFrames, title}
+            });
+            
             console.log("FlipBook Saved Successfully:", flipBookData)
         } catch (err: any){
             console.error("Failed to save flipbook:", err);

@@ -19,3 +19,15 @@ export const QUERY_ME = gql`
         }
     }
 `;
+
+export const QUERY_LOOPS = gql`
+ query loop(id: $id) {
+    id
+    title
+    frames {
+        id
+        canvasImg
+        data
+    }
+ }
+`;
