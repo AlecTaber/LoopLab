@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 // eslint-disable-next-line
 var canvasWidth = 500 | 0; 
 // eslint-disable-next-line
-var canvasHeight = 400 | 0;
+var canvasHeight = 500 | 0;
 
 //should update the page depending on which pixel was clicked on.
 const CanvasComponent: React.FC = () => {
