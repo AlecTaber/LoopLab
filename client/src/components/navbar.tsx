@@ -28,12 +28,6 @@ const NavBar: React.FC = () => {
                 <button onClick={() => handleNavigation("/home")} className="link text-white hover:text-gray-200">Home</button>
                 <button onClick={() => handleNavigation("/canvas")} className="link text-white hover:text-gray-200">Canvas</button>
                 <button onClick={() => handleNavigation("/profile")} className="link text-white hover:text-gray-200">My Profile</button>
-                <button onClick={() => handleNavigation("/login")} className="bg-white text-indigo-600 px-4 py-2 rounded hover:bg-gray-200">
-                    Login
-                </button>
-                <button onClick={() => handleNavigation("/")} className="bg-white text-indigo-600 px-4 py-2 rounded hover:bg-gray-200">
-                    Register
-                </button>
             </nav>
             <h3 className="mt-4 text-indigo-600">Loop Lab NavBar</h3>
         </div>

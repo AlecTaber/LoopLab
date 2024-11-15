@@ -9,24 +9,28 @@ const commentTypeDefs = gql`
     userId: ID!
     }
 
-    type Query {
-      getCommentsByUser(userId: ID!): [Comment]
-      getCommentsByPost(postId: ID!): [Comment]
+  type CommentPayload {
+    comment: Comment!
     }
 
-    type Mutation {
-      createComment(input: CreateCommentInput): Comment!
-      editComment(input: EditCommentInput): Comment!
-      deleteComment(id: ID!): Comment!
+  type Query {
+    getCommentsByUser(userId: ID!): [Comment]
+    getCommentsByPost(postId: ID!): [Comment]
     }
 
-    input CreateCommentInput {
-      body: String!
-      postId: ID!
+  type Mutation {
+    createComment(input: CreateCommentInput): Comment!
+    editComment(input: EditCommentInput): Comment!
+    deleteComment(id: ID!): Comment!
     }
 
-    input EditCommentInput {
-      body: String!
+  input CreateCommentInput {
+    body: String!
+    postId: ID!
+    }
+
+  input EditCommentInput {
+    body: String!
     }
     `;
 
