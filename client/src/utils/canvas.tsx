@@ -290,7 +290,7 @@ const CanvasComponent: React.FC = () => {
                 <div className="clear-erase">
                     <button className='clear'onClick={clearCanvas}>Clear</button>
                     <button className='erase'onClick={() => setClear(true)}>Eraser</button>
-                    <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                    <button className="bg-green-500 text-white py-2 px-4 rounded mb-4" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
                 </div>
 
                 <div>
