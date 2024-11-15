@@ -6,14 +6,23 @@ import connection from './config/connection.js';
 import { verifyToken } from './utils/jwt.js';
 import userTypeDefs from './typeDefs/userTypeDefs.js';
 import userResolvers from './resolvers/userResolvers.js';
+import loopResolvers from './resolvers/loopsResolvers.js';
+import loopTypeDefs from './typeDefs/loopsTypeDefs.js';
 import commentTypeDefs from './typeDefs/commentTypeDefs.js';
 import commentResolvers from './resolvers/commentResolvers.js';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import dotenv from 'dotenv';
+import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 
 dotenv.config();
 
 const app: Application = express();
+
+//set max file size and file limit
+app.use(graphqlUploadExpress({
+  maxFileSize: 500 * 1024 * 1024,
+  maxFiles: 20
+}))
 
 // Initialize MongoDB Atlas connection
 connection();
@@ -35,8 +44,8 @@ io.on('connection', (socket: Socket) => {
 
 // Define GraphQL schema
 const schema = makeExecutableSchema({
-  typeDefs: [userTypeDefs, commentTypeDefs],
-  resolvers: [userResolvers, commentResolvers],
+  typeDefs: [userTypeDefs, loopTypeDefs, commentTypeDefs],
+  resolvers: [userResolvers, loopResolvers, commentResolvers],
 });
 
 const apolloServer = new ApolloServer({
@@ -48,6 +57,7 @@ const apolloServer = new ApolloServer({
     return { userId };
   },
 });
+
 
 // Start the Apollo Server and apply it to the Express app
 (async function startServer() {
