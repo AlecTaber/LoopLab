@@ -8,6 +8,9 @@ import {
 } from '@apollo/client';
 import {setContext} from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
+import { Cloudinary } from '@cloudinary/url-gen';
+import { AdvancedImage } from '@cloudinary/react';
+import { fill } from '@cloudinary/url-gen/actions/resize';
 
 const httpLink = createHttpLink({
  uri: '/graphql', 
@@ -30,15 +33,31 @@ const client = new ApolloClient({
 })
 
 function App() {
+
+  const cld = new Cloudinary({
+    cloud: {
+       cloudName: import.meta.env.VITE_CLOUDINARY_NAME || 'default-cloud-name',
+      // cloudName: 'dxdq51xth',
+    },
+  });
+
+  const myImage = cld.image('sample');
+  myImage.resize(fill().width(250).height(250));
+
   return (
     <ApolloProvider client={client}>
       <div>
         <NavBar />
         <div>
-          <Outlet /> 
+           {/* Cloudinary AdvancedImage Component */}
+           <div style={{ margin: '20px', textAlign: 'center' }}>
+            <AdvancedImage cldImg={myImage} />
+          </div>
+          {/* Main Application Content */}
+          <Outlet />
         </div>
       </div>
-    </ApolloProvider> 
+    </ApolloProvider>
   );
 }
 
