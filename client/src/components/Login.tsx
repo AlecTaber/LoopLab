@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginProps {
     data?: {
@@ -11,7 +12,7 @@ interface LoginProps {
             };
         };
     };
-    errors?: Array<{message: string}>;
+    errors?: Array<{ message: string }>;
 }
 
 const Login: React.FC = () => {
@@ -19,6 +20,7 @@ const Login: React.FC = () => {
     const [password, setPassword] = useState<string>('');
     const [message, setMessage] = useState<string | null>(null);
     const [isError, setIsError] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     const GRAPHQL_URL = 'http://localhost:3001/graphql';
 
@@ -61,6 +63,7 @@ const Login: React.FC = () => {
             setPassword('');
 
             localStorage.setItem('token', result.data.login.token);
+            navigate('/home');
         }
     };
 
@@ -68,7 +71,7 @@ const Login: React.FC = () => {
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="bg-white p-8 rounded shadow-md w-96">
                 <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
-                
+
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
@@ -81,7 +84,7 @@ const Login: React.FC = () => {
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                     </div>
-                    
+
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
                         <input
@@ -93,7 +96,7 @@ const Login: React.FC = () => {
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                     </div>
-                    
+
                     <button
                         type="submit"
                         className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -107,6 +110,15 @@ const Login: React.FC = () => {
                         {message}
                     </div>
                 )}
+                <div className="mt-4 text-center">
+                    Don't have an account?{' '}
+                    <button
+                        onClick={() => navigate('/')}
+                        className="text-indigo-600 hover:underline"
+                    >
+                        Register here
+                    </button>
+                </div>
             </div>
         </div>
     );
