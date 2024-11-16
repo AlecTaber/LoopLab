@@ -36,7 +36,6 @@ export const SAVE_FLIPBOOK = gql`
       frames {
         frameId
         canvasImg
-        data
       }
     }
   }

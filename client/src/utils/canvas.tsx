@@ -5,7 +5,7 @@ import { SAVE_FLIPBOOK } from "./mutations";
 
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
-import { colorSpace } from "@cloudinary/url-gen/actions/delivery";
+// import { colorSpace } from "@cloudinary/url-gen/actions/delivery";
 // import saveFlipBook from "./canvasTools/canvasSave";
 
 // eslint-disable-next-line
@@ -23,8 +23,8 @@ const CanvasComponent: React.FC = () => {
     const [isClear, setClear] = useState(false);
 
     const [activeFrameIndex, setActiveFrameIndex] = useState(0);
-    const [frames, setFrames] = useState<{ id: string, data: ImageData | null, canvasImg?: string | Blob }[]>([
-        { id: uuidv4(), data: null, canvasImg: "" }
+    const [frames, setFrames] = useState<{ id: string, canvasImg?: string | Blob }[]>([
+        { id: uuidv4(), canvasImg: "" }
     ]);
 
 
@@ -60,10 +60,6 @@ const CanvasComponent: React.FC = () => {
             const formattedFrames = updatedFrames.map((frame) => ({
                 frameId: frame.id,
                 canvasImg: frame.canvasImg,
-                data: frame.data?.data ? Array.from(frame.data.data) : null, // Optionally include pixel data
-                width: frame.data?.width || 0,
-                height: frame.data?.height || 0,
-                colorSpace: frame.data?.colorSpace || 'srgb',
             }));
 
             const title = 'My Flipbook!';
@@ -99,22 +95,16 @@ const CanvasComponent: React.FC = () => {
     const saveCurrentFrameData = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        if (!ctx) return;
-
-        const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-        const updatedFrames = [...frames];
-        updatedFrames[activeFrameIndex].data = imageData;
-
+      
         canvas.toBlob((blob) => {
-            if (blob) {
-                updatedFrames[activeFrameIndex].canvasImg = blob;
-                setFrames(updatedFrames);
-            }
+          if (blob) {
+            const updatedFrames = [...frames];
+            updatedFrames[activeFrameIndex].canvasImg = blob; // Store Blob
+            setFrames(updatedFrames);
+          }
         }, 'image/png');
-
-    };
+      };
+      
 
     const handleNewFrame = () => {
         saveCurrentFrameData();
@@ -127,18 +117,37 @@ const CanvasComponent: React.FC = () => {
     const switchFrame = (index: number) => {
         saveCurrentFrameData();
         setActiveFrameIndex(index);
-        loadFrameData(frames[index].data);
-    };
-
-    const loadFrameData = (imageData: ImageData | null) => {
+      
+        const frame = frames[index];
         const canvas = canvasRef.current;
-        if (!canvas || !imageData) return;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!canvas || !frame || !frame.canvasImg) return;
+      
+        const ctx = canvas.getContext('2d');
         if (!ctx) return;
+      
+        const img = new Image();
+        if (frame.canvasImg instanceof Blob) {
+          img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
+        } else {
+          img.src = frame.canvasImg; // Use Cloudinary URL
+        }
+      
+        img.onload = () => {
+          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+          ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+        };
+      };
+      
 
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-        ctx.putImageData(imageData, 0, 0);
-    };
+    // const loadFrameData = (imageData: ImageData | null) => {
+    //     const canvas = canvasRef.current;
+    //     if (!canvas || !imageData) return;
+    //     const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    //     if (!ctx) return;
+
+    //     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    //     ctx.putImageData(imageData, 0, 0);
+    // };
 
     //draws an initial grid onto the canvas.
     const drawGrid = (ctx: CanvasRenderingContext2D) => {
@@ -296,15 +305,32 @@ const CanvasComponent: React.FC = () => {
       };
       
 
-    const stopAnimation = () => {
+      const stopAnimation = () => {
         setIsPlaying(false);
         if (animationIntervalRef.current) {
-            clearInterval(animationIntervalRef.current);
-            animationIntervalRef.current = null;
+          clearInterval(animationIntervalRef.current);
+          animationIntervalRef.current = null;
         }
-        // Load the currently active frame
-        loadFrameData(frames[activeFrameIndex].data);
-    };
+      
+        const frame = frames[activeFrameIndex];
+        const canvas = canvasRef.current;
+        if (!canvas || !frame || !frame.canvasImg) return;
+      
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+      
+        const img = new Image();
+        if (frame.canvasImg instanceof Blob) {
+          img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
+        } else {
+          img.src = frame.canvasImg; // Use Cloudinary URL
+        }
+      
+        img.onload = () => {
+          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+          ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+        };
+      };
 
 
     useEffect(() => {
