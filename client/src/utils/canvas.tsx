@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
 import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
-import { SAVE_FLIPBOOK } from "./mutations";
+import { SAVE_LOOP } from "./mutations";
 
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
 // import { colorSpace } from "@cloudinary/url-gen/actions/delivery";
-// import saveFlipBook from "./canvasTools/canvasSave";
+//import saveLoop from "./canvasTools/canvasSave";
 
 // eslint-disable-next-line
 var canvasWidth = 500 | 0;
@@ -23,7 +23,7 @@ const CanvasComponent: React.FC = () => {
     const [isClear, setClear] = useState(false);
 
     const [activeFrameIndex, setActiveFrameIndex] = useState(0);
-    const [frames, setFrames] = useState<{ id: string, canvasImg?: Blob | null }[]>([
+    const [frames, setFrames] = useState<{ id: string, canvasImg: string | Blob | null }[]>([
         { id: uuidv4(), canvasImg: null }
     ]);
 
@@ -37,39 +37,55 @@ const CanvasComponent: React.FC = () => {
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const [saveFlipbook] = useMutation(SAVE_FLIPBOOK)
+    const [saveLoop] = useMutation(SAVE_LOOP)
 
 
-    const handleFlipbookSave = async () => {
+    const handleLoopSave = async () => {
         try {
             const updatedFrames = await Promise.all(
                 frames.map(async (frame) => {
-                    if (!frame.canvasImg || !(frame.canvasImg instanceof Blob)) return frame;
+                    if (!frame.canvasImg || !(frame.canvasImg instanceof Blob)) {
+                        console.log('Skipping upload for frame:', frame);
+                        return {
+                            frameId: frame.id,
+                            canvasImg: frame.canvasImg, // Save Cloudinary URL
+                        }
+                    };
 
                     // Upload Blob to Cloudinary
                     const cloudinaryUrl = await uploadToCloudinary(frame.canvasImg);
+                    console.log('Cloudinary URL for frame:', frame.id, cloudinaryUrl);
 
                     return {
-                        ...frame,
+                        frameId: frame.id,
                         canvasImg: cloudinaryUrl, // Replace Blob with Cloudinary URL
                     };
                 })
             );
+            console.log('Formatted frames with cloudinary URLs:', updatedFrames);
+            const validFrames = updatedFrames.filter((frame) => frame.canvasImg !== null);
+            console.log('Filtered valid frames:', validFrames);
 
-            // Save frames to the database via GraphQL
+            if (validFrames.length === 0) {
+                throw new Error('No frames to save');
+            }
+
+            // Save frame URLs to the database via GraphQL
             const formattedFrames = updatedFrames.map((frame) => ({
-                frameId: frame.id,
+                frameId: frame.frameId,
                 canvasImg: frame.canvasImg,
             }));
 
-            const title = 'My Flipbook!';
-            const flipBookData = await saveFlipbook({
-                variables: { frames: formattedFrames, title },
+            const title = `My Loop - ${new Date().toLocaleString()}`;
+            console.log('Payload for save loop mutation:', { title, frames: validFrames });
+            const { data } = await saveLoop({
+                variables: { title, frames: formattedFrames },
             });
 
-            console.log('Flipbook saved successfully:', flipBookData);
+            console.log('Loop saved successfully:', data.saveLoop);
         } catch (err) {
-            console.error('Failed to save flipbook:', err);
+            console.error('Failed to save loop:', err);
+            alert('Failed to save loop. Please try again.');
         }
     };
 
@@ -108,16 +124,35 @@ const CanvasComponent: React.FC = () => {
       };
       
 
-    const handleNewFrame = () => {
-        saveCurrentFrameData();
-        setFrames((prevFrames) => { 
-            const newFrame = { id: uuidv4(), canvasImg: null };
-            const updatedFrames = [...prevFrames, newFrame] 
-        setActiveFrameIndex(updatedFrames.length -1); // Set the new frame as active
-        return updatedFrames;
-    });
-        clearCanvas();
-    }
+      const handleNewFrame = async () => {
+        // Save the current frame first
+        await saveCurrentFrameData();
+        // Add a new blank frame
+        const newFrameId = uuidv4();
+        const canvas = canvasRef.current;
+        if (canvas) {
+            canvas.toBlob(async (blob) => {
+                let canvasImg: string | null = null;
+                if (blob) {
+                    try {
+                        // Upload blank canvas to Cloudinary
+                        canvasImg = await uploadToCloudinary(blob);
+                        console.log(`Uploaded blank canvas for frame ${newFrameId}:`, canvasImg);
+                    } catch (error) {
+                        console.error('Failed to upload blank canvas:', error);
+                    }
+                }
+                // Add new blank frame to frames state
+                setFrames((prevFrames) => [
+                    ...prevFrames,
+                    { id: newFrameId, canvasImg },
+                ]);
+                // Set the new frame as active
+                setActiveFrameIndex((frames.length)); // Correctly set index
+                clearCanvas(); // Clear the canvas for the new frame
+            }, 'image/png');
+        }
+    };  
 
     const switchFrame = (index: number) => {
         saveCurrentFrameData();
@@ -396,7 +431,7 @@ const CanvasComponent: React.FC = () => {
                 </div>
 
                 <div>
-                    <button className="saveFlipbook" onClick={handleFlipbookSave}>Save Flipbook</button>
+                    <button className="saveLoop" onClick={handleLoopSave}>Save Loop</button>
                 </div>
             </div>
 
