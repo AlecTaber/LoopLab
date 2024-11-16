@@ -23,8 +23,8 @@ const CanvasComponent: React.FC = () => {
     const [isClear, setClear] = useState(false);
 
     const [activeFrameIndex, setActiveFrameIndex] = useState(0);
-    const [frames, setFrames] = useState<{ id: string, canvasImg?: string | Blob }[]>([
-        { id: uuidv4(), canvasImg: "" }
+    const [frames, setFrames] = useState<{ id: string, canvasImg?: Blob | null }[]>([
+        { id: uuidv4(), canvasImg: null }
     ]);
 
 
@@ -98,21 +98,26 @@ const CanvasComponent: React.FC = () => {
       
         canvas.toBlob((blob) => {
           if (blob) {
-            const updatedFrames = [...frames];
-            updatedFrames[activeFrameIndex].canvasImg = blob; // Store Blob
-            setFrames(updatedFrames);
-          }
+            setFrames((prevFrames) => {
+                const updatedFrames = [...prevFrames];
+                updatedFrames[activeFrameIndex].canvasImg = blob;
+                return updatedFrames;
+            });
+        }
         }, 'image/png');
       };
       
 
     const handleNewFrame = () => {
         saveCurrentFrameData();
-        const newFrame = { id: uuidv4(), data: null };
-        setFrames([...frames, newFrame]);
-        setActiveFrameIndex(frames.length); // Set the new frame as active
+        setFrames((prevFrames) => { 
+            const newFrame = { id: uuidv4(), canvasImg: null };
+            const updatedFrames = [...prevFrames, newFrame] 
+        setActiveFrameIndex(updatedFrames.length -1); // Set the new frame as active
+        return updatedFrames;
+    });
         clearCanvas();
-    };
+    }
 
     const switchFrame = (index: number) => {
         saveCurrentFrameData();
@@ -120,7 +125,10 @@ const CanvasComponent: React.FC = () => {
       
         const frame = frames[index];
         const canvas = canvasRef.current;
-        if (!canvas || !frame || !frame.canvasImg) return;
+        if (!canvas || !frame || !frame.canvasImg) {
+            clearCanvas();
+            return;
+        }
       
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
@@ -349,15 +357,13 @@ const CanvasComponent: React.FC = () => {
             <div className="framesContainer">
                 {frames.map((frame, index) => (
                     <button key={frame.id} onClick={() => switchFrame(index)} disabled={isPlaying}>
-                        {frame.canvasImg instanceof Blob ? (
+                        {frame.canvasImg && (
                             <img
-                                src={URL.createObjectURL(frame.canvasImg)} // Create a temporary URL for the Blob
+                            src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg} // Create a temporary URL for the Blob
                                 width="60"
                                 height="60"
-                                alt="Frame Thumbnail"
+                                alt={`Frame ${index +1} Thumbnail`}
                             />
-                        ) : (
-                            <img src={frame.canvasImg} width="60" height="60" alt="Frame Thumbnail" />
                         )}
                     </button>
                 ))}
