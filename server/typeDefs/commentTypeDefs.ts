@@ -1,6 +1,6 @@
 import { gql } from 'apollo-server-express';
 
-//add postId: ID! to the Comment type once the Post model is created
+//add LoopId: ID! to the Comment type once the Post model is created
 const commentTypeDefs = gql`
   type Comment {
     id: ID!

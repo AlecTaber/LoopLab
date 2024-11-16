@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
 import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
-import { SAVE_FLIPBOOK } from "./mutations";
+import { SAVE_LOOP } from "./mutations";
 
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
 // import { colorSpace } from "@cloudinary/url-gen/actions/delivery";
-// import saveFlipBook from "./canvasTools/canvasSave";
+// import saveLoop from "./canvasTools/canvasSave";
 
 // eslint-disable-next-line
 var canvasWidth = 500 | 0;
@@ -37,39 +37,45 @@ const CanvasComponent: React.FC = () => {
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const [saveFlipbook] = useMutation(SAVE_FLIPBOOK)
+    const [saveLoop] = useMutation(SAVE_LOOP)
 
 
-    const handleFlipbookSave = async () => {
+    const handleLoopSave = async () => {
         try {
             const updatedFrames = await Promise.all(
                 frames.map(async (frame) => {
-                    if (!frame.canvasImg || !(frame.canvasImg instanceof Blob)) return frame;
+                    if (!frame.canvasImg || !(frame.canvasImg instanceof Blob)) {
+                        return {
+                            frameId: frame.id,
+                            canvasImg: frame.canvasImg, // Save Cloudinary URL
+                        }
+                    };
 
                     // Upload Blob to Cloudinary
                     const cloudinaryUrl = await uploadToCloudinary(frame.canvasImg);
 
                     return {
-                        ...frame,
+                        frameId: frame.id,
                         canvasImg: cloudinaryUrl, // Replace Blob with Cloudinary URL
                     };
                 })
             );
 
-            // Save frames to the database via GraphQL
+            // Save frame URLs to the database via GraphQL
             const formattedFrames = updatedFrames.map((frame) => ({
-                frameId: frame.id,
+                frameId: frame.frameId,
                 canvasImg: frame.canvasImg,
             }));
 
-            const title = 'My Flipbook!';
-            const flipBookData = await saveFlipbook({
+            const title = `My Loop - ${new Date().toLocaleString()}`;
+            const { data } = await saveLoop({
                 variables: { frames: formattedFrames, title },
             });
 
-            console.log('Flipbook saved successfully:', flipBookData);
+            console.log('Loop saved successfully:', data.saveLoop);
         } catch (err) {
-            console.error('Failed to save flipbook:', err);
+            console.error('Failed to save loop:', err);
+            alert('Failed to save loop. Please try again.');
         }
     };
 
@@ -396,7 +402,7 @@ const CanvasComponent: React.FC = () => {
                 </div>
 
                 <div>
-                    <button className="saveFlipbook" onClick={handleFlipbookSave}>Save Flipbook</button>
+                    <button className="saveLoop" onClick={handleLoopSave}>Save Loop</button>
                 </div>
             </div>
 

@@ -12,12 +12,12 @@ const commentResolvers = {
             }
         },
 
-        /*getCommentsByPost: async (_: any, { input }: { input: { body: string } }) => {
+        /*getCommentsByLoop: async (_: any, { input }: { input: { body: string } }) => {
             try {
-                const comments = await Comment.find({ postId });
+                const comments = await Comment.find({ LoopId });
                 return comments;
             } catch (error) {
-                throw new Error("Error getting comments by post");
+                throw new Error("Error getting comments by Loop");
             }
         },*/
     },
@@ -41,10 +41,10 @@ const commentResolvers = {
 
             await comment.save();
 
-            /*const post = await Post.findById(comment.postId);
-      if (post) {
-        post.comments.push(comment._id);
-        await post.save();
+            /*const loop = await Loop.findById(comment.loopId);
+      if (loop) {
+        loop.comments.push(comment._id);
+        await loop.save();
       }*/
 
             return comment;
