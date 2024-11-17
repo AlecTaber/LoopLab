@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, ChangeEvent } from "react"
 import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
 import { SAVE_LOOP } from "./mutations";
-
+import "../pages/canvasPage.css";
 
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
@@ -398,51 +398,78 @@ const CanvasComponent: React.FC = () => {
                     <button key={frame.id} onClick={() => switchFrame(index)} disabled={isPlaying}>
                         {frame.canvasImg && (
                             <img
-                            src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg} // Create a temporary URL for the Blob
+                                src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg}
                                 width="60"
                                 height="60"
-                                alt={`Frame ${index +1} Thumbnail`}
+                                alt={`Frame ${index + 1} Thumbnail`}
                             />
                         )}
                     </button>
                 ))}
                 <button onClick={handleNewFrame}>New Frame</button>
             </div>
-
-            <div className="canvasHolder">
-                <canvas id='paintMain' ref={canvasRef} width={canvasWidth} height={canvasHeight} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUpLeave} onMouseLeave={handleMouseUpLeave} style={{ border: '1px solid blue' }}></canvas>
-
+    
+            {/* Add a wrapper div to make the canvas responsive */}
+            <div className="responsive-canvas">
+                <canvas
+                    id="paintMain"
+                    ref={canvasRef}
+                    width={canvasWidth}
+                    height={canvasHeight}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUpLeave}
+                    onMouseLeave={handleMouseUpLeave}
+                    style={{ border: "1px solid blue" }}
+                ></canvas>
             </div>
+    
             <div className="componentsContainer">
-
                 <div>
-                    <label>Brush Size: <input type="text" name="brushSize" value={brushSize || ""} onChange={(e: any) => { handleBrushSizeChange(e) }} className="brushSize"></input></label>
+                    <label>
+                        Brush Size:{" "}
+                        <input
+                            type="text"
+                            name="brushSize"
+                            value={brushSize || ""}
+                            onChange={(e: any) => {
+                                handleBrushSizeChange(e);
+                            }}
+                            className="brushSize"
+                        ></input>
+                    </label>
                 </div>
-
+    
                 <div className="hexColorPicker">
-                    {/* this is the hex color picker box */}
                     <HexColorPicker color={colorCode} onChange={changeColor} />
                 </div>
-
+    
                 <div className="colorCodeContainer">
-                    <label className='hex'>Hex Code: <input type='text' name='colorCode' value={colorCode || ''} onChange={changeColorCode}></input></label>
+                    <label className="hex">
+                        Hex Code:{" "}
+                        <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
+                    </label>
                 </div>
-
+    
                 <div className="clear-erase">
-                    <button className='clear'onClick={clearCanvas}>Clear</button>
-                    <button className='erase'onClick={() => setClear(true)}>Eraser</button>
+                    <button className="clear" onClick={clearCanvas}>
+                        Clear
+                    </button>
+                    <button className="erase" onClick={() => setClear(true)}>
+                        Eraser
+                    </button>
                     <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
                 </div>
-
+    
                 <div>
-                    <button className="saveLoop" onClick={handleLoopSave}>Save Loop</button>
+                    <button className="saveLoop" onClick={handleLoopSave}>
+                        Save Loop
+                    </button>
                 </div>
             </div>
-
-
         </div>
-
-    )
+    );
+    
 }
 
 export default CanvasComponent

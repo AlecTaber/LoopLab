@@ -1,0 +1,14 @@
+.responsive-canvas {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    overflow: hidden;
+}
+
+.responsive-canvas canvas {
+    width: 100%;
+    height: auto;
+}
