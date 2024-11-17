@@ -128,7 +128,10 @@ const CanvasComponent: React.FC = () => {
       const handleNewFrame = async () => {
         // Save the current frame first
         await saveCurrentFrameData();
-        // Add a new blank frame
+    
+        // Clear the canvas to make the new frame blank
+        clearCanvas(); // Ensures the canvas is blank for the new frame
+    
         const newFrameId = uuidv4();
         const canvas = canvasRef.current;
         if (canvas) {
@@ -149,11 +152,11 @@ const CanvasComponent: React.FC = () => {
                     { id: newFrameId, canvasImg },
                 ]);
                 // Set the new frame as active
-                setActiveFrameIndex((frames.length)); // Correctly set index
-                clearCanvas(); // Clear the canvas for the new frame
+                setActiveFrameIndex(frames.length); // Correctly set index
             }, 'image/png');
         }
-    };  
+    };
+    
 
     const switchFrame = (index: number) => {
         saveCurrentFrameData();
