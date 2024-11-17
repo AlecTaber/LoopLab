@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
 import { SAVE_LOOP } from "./mutations";
 
+
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
 // import { colorSpace } from "@cloudinary/url-gen/actions/delivery";
@@ -406,7 +407,7 @@ const CanvasComponent: React.FC = () => {
             </div>
 
             <div className="canvasHolder">
-                <canvas id='paintMain' ref={canvasRef} width={canvasWidth} height={canvasHeight} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUpLeave} onMouseLeave={handleMouseUpLeave} style={{ border: '1px solid red' }}></canvas>
+                <canvas id='paintMain' ref={canvasRef} width={canvasWidth} height={canvasHeight} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUpLeave} onMouseLeave={handleMouseUpLeave} style={{ border: '1px solid blue' }}></canvas>
 
             </div>
             <div className="componentsContainer">
@@ -425,8 +426,8 @@ const CanvasComponent: React.FC = () => {
                 </div>
 
                 <div className="clear-erase">
-                    <button className='clear' onClick={clearCanvas}>Clear</button>
-                    <button className='erase' onClick={() => setClear(true)}>Eraser</button>
+                    <button className='clear'onClick={clearCanvas}>Clear</button>
+                    <button className='erase'onClick={() => setClear(true)}>Eraser</button>
                     <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
                 </div>
 
