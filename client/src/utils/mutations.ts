@@ -27,16 +27,14 @@ export const ADD_USER = gql`
     }
 `;
 
-export const SAVE_FLIPBOOK = gql`
-  mutation SaveFlipbook($frames: [FrameInput!]!, $title: String) {
-    saveFlipbook(frames: $frames, title: $title) {
+export const SAVE_LOOP = gql`
+  mutation SaveLoop($title: String!, $frames: [FrameInput!]!) {
+    saveLoop(title: $title, frames: $frames) {
       _id
-      loopId
       title
       frames {
         frameId
         canvasImg
-        data
       }
     }
   }

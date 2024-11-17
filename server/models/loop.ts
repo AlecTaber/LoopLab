@@ -1,40 +1,25 @@
-import mongoose, {Document, Types, Schema} from "mongoose";
+import mongoose, {Document, Schema} from "mongoose";
 
-interface Frame {
+export interface IFrame {
     frameId: string;
-    canvasImg?: string;
-    data: {
-        data: Uint8ClampedArray;
-        colorSpace: string;
-        height: number;
-        width: number;
-    }
+    canvasImg: string;
 }
 
 export interface ILoop extends Document {
-    userId: Types.ObjectId,
-    loopId: any,
-    title: string,
-    frames: Frame[]    
+    title: string;
+    frames: IFrame[];
 }
 
-const frameSchema = new Schema<Frame>({
+const frameSchema = new Schema<IFrame>({
     frameId: { type: String, required: true },
-    canvasImg: { type: String },
-    data: {
-        data: { type: [Number], required: true }, // Store Uint8ClampedArray as an array of numbers
-        colorSpace: { type: String, required: true },
-        height: { type: Number, required: true },
-        width: { type: Number, required: true }
-    }
-}); 
-
-const loopSchema = new Schema<ILoop>({
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    loopId: { type: String, required: true },
-    title: { type: String, required: true },
-    frames: { type: [frameSchema], required: true } // Array of frames
+    canvasImg: { type: String, required: true },
 });
 
-const Loop = mongoose.model<ILoop>("Loop", loopSchema);
+const loopSchema = new Schema<ILoop>({
+    title: { type: String, required: true },
+    frames: [frameSchema],
+});
+
+const Loop = mongoose.model<ILoop>('Loop', loopSchema);
+
 export default Loop;

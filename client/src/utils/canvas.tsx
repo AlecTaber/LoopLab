@@ -1,15 +1,17 @@
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
 import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
-import { SAVE_FLIPBOOK } from "./mutations";
+import { SAVE_LOOP } from "./mutations";
 
-import { v4 as uuidv4 } from "uuid"; 
-// import saveFlipBook from "./canvasTools/canvasSave";
+import { v4 as uuidv4 } from "uuid";
+import uploadToCloudinary from "./uploadToCloudinary";
+// import { colorSpace } from "@cloudinary/url-gen/actions/delivery";
+//import saveLoop from "./canvasTools/canvasSave";
 
 // eslint-disable-next-line
-var canvasWidth = 500 | 0; 
+var canvasWidth = 500 | 0;
 // eslint-disable-next-line
-var canvasHeight = 400 | 0;
+var canvasHeight = 500 | 0;
 
 //should update the page depending on which pixel was clicked on.
 const CanvasComponent: React.FC = () => {
@@ -17,12 +19,12 @@ const CanvasComponent: React.FC = () => {
     const pixelSize = 10;
 
     const [isPainting, setPainting] = useState(false);
-    const [previousMousePosition, setPreviousMousePosition] = useState<{ x: number; y: number} | null>(null);
+    const [previousMousePosition, setPreviousMousePosition] = useState<{ x: number; y: number } | null>(null);
     const [isClear, setClear] = useState(false);
 
     const [activeFrameIndex, setActiveFrameIndex] = useState(0);
-    const [frames, setFrames] = useState<{ id: string, data: ImageData | null, canvasImg?: string }[]>([
-        { id: uuidv4(), data: null, canvasImg: ""}
+    const [frames, setFrames] = useState<{ id: string, canvasImg: string | Blob | null }[]>([
+        { id: uuidv4(), canvasImg: null }
     ]);
 
 
@@ -35,36 +37,58 @@ const CanvasComponent: React.FC = () => {
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const [saveFlipbook] = useMutation(SAVE_FLIPBOOK)
-    
+    const [saveLoop] = useMutation(SAVE_LOOP)
 
-    const handleFlipbookSave = async () => {
-        console.log("Flipbook Data:", frames)
-        const blob = new Blob([JSON.stringify(frames)]);
-        const sizeInBytes = blob.size;
-        console.log("Size in bytes:", sizeInBytes)
 
+    const handleLoopSave = async () => {
         try {
-            const formattedFrames = frames.map(frame => ({
-                frameId: frame.id,
+            const updatedFrames = await Promise.all(
+                frames.map(async (frame) => {
+                    if (!frame.canvasImg || !(frame.canvasImg instanceof Blob)) {
+                        console.log('Skipping upload for frame:', frame);
+                        return {
+                            frameId: frame.id,
+                            canvasImg: frame.canvasImg, // Save Cloudinary URL
+                        }
+                    };
+
+                    // Upload Blob to Cloudinary
+                    const cloudinaryUrl = await uploadToCloudinary(frame.canvasImg);
+                    console.log('Cloudinary URL for frame:', frame.id, cloudinaryUrl);
+
+                    return {
+                        frameId: frame.id,
+                        canvasImg: cloudinaryUrl, // Replace Blob with Cloudinary URL
+                    };
+                })
+            );
+            console.log('Formatted frames with cloudinary URLs:', updatedFrames);
+            const validFrames = updatedFrames.filter((frame) => frame.canvasImg !== null);
+            console.log('Filtered valid frames:', validFrames);
+
+            if (validFrames.length === 0) {
+                throw new Error('No frames to save');
+            }
+
+            // Save frame URLs to the database via GraphQL
+            const formattedFrames = updatedFrames.map((frame) => ({
+                frameId: frame.frameId,
                 canvasImg: frame.canvasImg,
-                data: frame.data?.data ? Array.from(frame.data.data) : null,// Convert ImageData if needed
-                width: frame.data?.width || 0,
-                height: frame.data?.height || 0,
-                colorSpace: frame.data?.colorSpace || 'srgb',
             }));
 
-            const title = "My title!"
-
-            const flipBookData = await saveFlipbook({
-                variables: {frames: formattedFrames, title}
+            const title = `My Loop - ${new Date().toLocaleString()}`;
+            console.log('Payload for save loop mutation:', { title, frames: validFrames });
+            const { data } = await saveLoop({
+                variables: { title, frames: formattedFrames },
             });
-            
-            console.log("FlipBook Saved Successfully:", flipBookData)
-        } catch (err: any){
-            console.error("Failed to save flipbook:", err);
+
+            console.log('Loop saved successfully:', data.saveLoop);
+        } catch (err) {
+            console.error('Failed to save loop:', err);
+            alert('Failed to save loop. Please try again.');
         }
     };
+
 
 
     const changeColor = (color: string) => {
@@ -78,7 +102,7 @@ const CanvasComponent: React.FC = () => {
     };
 
     const handleBrushSizeChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { value} = e.target;
+        const { value } = e.target;
         const valueInt = parseInt(value)
         setBrushSize(valueInt)
     };
@@ -87,42 +111,86 @@ const CanvasComponent: React.FC = () => {
     const saveCurrentFrameData = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        if (!ctx) return;
+      
+        canvas.toBlob((blob) => {
+          if (blob) {
+            setFrames((prevFrames) => {
+                const updatedFrames = [...prevFrames];
+                updatedFrames[activeFrameIndex].canvasImg = blob;
+                return updatedFrames;
+            });
+        }
+        }, 'image/png');
+      };
+      
 
-        const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-        const updatedFrames = [...frames];
-        updatedFrames[activeFrameIndex].data = imageData;
-
-        //set canvas picture
-        const dataUrl = canvas?.toDataURL('image/png')
-        updatedFrames[activeFrameIndex].canvasImg = dataUrl
-        setFrames(updatedFrames);
-    };
-
-    const handleNewFrame = () => {
-        saveCurrentFrameData();
-        const newFrame = { id: uuidv4(), data: null };
-        setFrames([...frames, newFrame]);
-        setActiveFrameIndex(frames.length); // Set the new frame as active
-        clearCanvas();
-    };
+      const handleNewFrame = async () => {
+        // Save the current frame first
+        await saveCurrentFrameData();
+        // Add a new blank frame
+        const newFrameId = uuidv4();
+        const canvas = canvasRef.current;
+        if (canvas) {
+            canvas.toBlob(async (blob) => {
+                let canvasImg: string | null = null;
+                if (blob) {
+                    try {
+                        // Upload blank canvas to Cloudinary
+                        canvasImg = await uploadToCloudinary(blob);
+                        console.log(`Uploaded blank canvas for frame ${newFrameId}:`, canvasImg);
+                    } catch (error) {
+                        console.error('Failed to upload blank canvas:', error);
+                    }
+                }
+                // Add new blank frame to frames state
+                setFrames((prevFrames) => [
+                    ...prevFrames,
+                    { id: newFrameId, canvasImg },
+                ]);
+                // Set the new frame as active
+                setActiveFrameIndex((frames.length)); // Correctly set index
+                clearCanvas(); // Clear the canvas for the new frame
+            }, 'image/png');
+        }
+    };  
 
     const switchFrame = (index: number) => {
         saveCurrentFrameData();
         setActiveFrameIndex(index);
-        loadFrameData(frames[index].data);
-    };
-
-    const loadFrameData = (imageData: ImageData | null) => {
+      
+        const frame = frames[index];
         const canvas = canvasRef.current;
-        if (!canvas || !imageData) return;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!canvas || !frame || !frame.canvasImg) {
+            clearCanvas();
+            return;
+        }
+      
+        const ctx = canvas.getContext('2d');
         if (!ctx) return;
+      
+        const img = new Image();
+        if (frame.canvasImg instanceof Blob) {
+          img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
+        } else {
+          img.src = frame.canvasImg; // Use Cloudinary URL
+        }
+      
+        img.onload = () => {
+          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+          ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+        };
+      };
+      
 
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-        ctx.putImageData(imageData, 0, 0);
-    };
+    // const loadFrameData = (imageData: ImageData | null) => {
+    //     const canvas = canvasRef.current;
+    //     if (!canvas || !imageData) return;
+    //     const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    //     if (!ctx) return;
+
+    //     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    //     ctx.putImageData(imageData, 0, 0);
+    // };
 
     //draws an initial grid onto the canvas.
     const drawGrid = (ctx: CanvasRenderingContext2D) => {
@@ -242,29 +310,70 @@ const CanvasComponent: React.FC = () => {
 
     const playAnimation = () => {
         if (isPlaying) {
-            stopAnimation();
-            return;
+          stopAnimation();
+          return;
         }
-
+      
         setIsPlaying(true);
         let frameIndex = 0;
-
+      
         animationIntervalRef.current = setInterval(() => {
-            if (frameIndex >= frames.length) frameIndex = 0;
-            loadFrameData(frames[frameIndex].data);
-            frameIndex++;
+          if (frameIndex >= frames.length) frameIndex = 0;
+      
+          const frame = frames[frameIndex];
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+      
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+      
+          if (frame.canvasImg instanceof Blob) {
+            const img = new Image();
+            img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
+            img.onload = () => {
+              ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+              ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+            };
+          } else if (typeof frame.canvasImg === 'string') {
+            const img = new Image();
+            img.src = frame.canvasImg; // Use Cloudinary URL
+            img.onload = () => {
+              ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+              ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+            };
+          }
+      
+          frameIndex++;
         }, animationSpeed);
-    };
+      };
+      
 
-    const stopAnimation = () => {
+      const stopAnimation = () => {
         setIsPlaying(false);
         if (animationIntervalRef.current) {
-            clearInterval(animationIntervalRef.current);
-            animationIntervalRef.current = null;
+          clearInterval(animationIntervalRef.current);
+          animationIntervalRef.current = null;
         }
-        // Load the currently active frame
-        loadFrameData(frames[activeFrameIndex].data);
-    };
+      
+        const frame = frames[activeFrameIndex];
+        const canvas = canvasRef.current;
+        if (!canvas || !frame || !frame.canvasImg) return;
+      
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+      
+        const img = new Image();
+        if (frame.canvasImg instanceof Blob) {
+          img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
+        } else {
+          img.src = frame.canvasImg; // Use Cloudinary URL
+        }
+      
+        img.onload = () => {
+          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+          ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+        };
+      };
 
 
     useEffect(() => {
@@ -283,7 +392,14 @@ const CanvasComponent: React.FC = () => {
             <div className="framesContainer">
                 {frames.map((frame, index) => (
                     <button key={frame.id} onClick={() => switchFrame(index)} disabled={isPlaying}>
-                        <img src={frame.canvasImg} width="60" height="60"/>
+                        {frame.canvasImg && (
+                            <img
+                            src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg} // Create a temporary URL for the Blob
+                                width="60"
+                                height="60"
+                                alt={`Frame ${index +1} Thumbnail`}
+                            />
+                        )}
                     </button>
                 ))}
                 <button onClick={handleNewFrame}>New Frame</button>
@@ -296,7 +412,7 @@ const CanvasComponent: React.FC = () => {
             <div className="componentsContainer">
 
                 <div>
-                    <label>Brush Size: <input type="text" name="brushSize" value={brushSize || ""} onChange={(e: any) => {handleBrushSizeChange(e)}} className="brushSize"></input></label>
+                    <label>Brush Size: <input type="text" name="brushSize" value={brushSize || ""} onChange={(e: any) => { handleBrushSizeChange(e) }} className="brushSize"></input></label>
                 </div>
 
                 <div className="hexColorPicker">
@@ -311,11 +427,11 @@ const CanvasComponent: React.FC = () => {
                 <div className="clear-erase">
                     <button className='clear'onClick={clearCanvas}>Clear</button>
                     <button className='erase'onClick={() => setClear(true)}>Eraser</button>
-                    <button className="bg-green-500 text-white py-2 px-4 rounded mb-4" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                    <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
                 </div>
 
                 <div>
-                    <button className="saveFlipbook" onClick={handleFlipbookSave}>Save Flipbook</button>
+                    <button className="saveLoop" onClick={handleLoopSave}>Save Loop</button>
                 </div>
             </div>
 
