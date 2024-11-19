@@ -5,6 +5,7 @@ import loop from "./loop.js";
 import type { ILoop } from "./loop.js";
 
 export interface IUser extends Document {
+  id: string;
   username: string;
   email: string;
   password: string;

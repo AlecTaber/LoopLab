@@ -2,8 +2,6 @@ import { gql } from 'apollo-server-express';
 
 const loopTypeDefs = gql`
     type Loop {
-        _id: ID!
-        userId: ID!
         title: String!
         frames: [Frame!]!
     }

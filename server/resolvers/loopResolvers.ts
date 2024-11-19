@@ -27,22 +27,24 @@ const LoopResolvers = {
                 }
 
                 const validFrames = input.frames.filter((frame) => frame.frameId && frame.canvasImg);
-                if (validFrames.length !== frames.length) {
-                    console.error("some frames have missing or invalid data", frames);
+                if (validFrames.length !== input.frames.length) {
+                    console.error("some frames have missing or invalid data", input.frames);
                     throw new Error("invalid frame data detected");
                 } 
 
                 if(context.user){
                     const updatedUser = await User.findByIdAndUpdate(
-                        {_id: context.user._id},
+                        {_id: context.user.userId},
                         {$addToSet: {loops: input}},
                         {new: true},
                     );
 
+                    console.log("Saved Loop successfully!", updatedUser);
+
                     return updatedUser
                 }
-                throw AuthenticationError;
-                ('You need to be logged in to use this feature!');
+
+                return console.error("User does not exist!")
 
             } catch (error) {
                 console.error("error saving loop: ", error);

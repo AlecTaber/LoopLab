@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { ApolloServer } from 'apollo-server-express';
 import connection from './config/connection.js';
-import { verifyToken } from './utils/jwt.js';
+import jwt from 'jsonwebtoken'
 import userTypeDefs from './typeDefs/userTypeDefs.js';
 import userResolvers from './resolvers/userResolvers.js';
 import loopResolvers from './resolvers/loopResolvers.js';
@@ -50,12 +50,19 @@ const schema = makeExecutableSchema({
 
 const apolloServer = new ApolloServer({
   schema,
-  // context: ({ req }) => {
-  //   const token = req.headers.authorization?.split(" ")[1] || '';
-  //   const payload = verifyToken(token);
-  //   const userId = payload ? payload.userId : null;
-  //   return { userId };
-  // },
+  context: ({ req }) => {
+    const token = req.headers.authorization?.split("Bearer ")[1] || '';
+    if(token){
+      try {
+        const user = jwt.verify(token, process.env.JWT_SECRET || "");
+        return {user};
+
+      } catch (err: any){
+        console.error("Invalid or expired token.")
+      }
+    }
+    return {}
+  },
 });
 
 
