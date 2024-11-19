@@ -13,17 +13,18 @@ const loopTypeDefs = gql`
         canvasImg: String
     }
 
-    type Mutation {
-        saveLoop(title: String!, frames: [FrameInput!]!): Loop
-    }
-
     input FrameInput {
         frameId: String!
         canvasImg: String!
     }
+    
+    input LoopInput {
+        title: String!,
+        frames: [FrameInput!]!
+    }
 
-    type Query {
-        getLoopsByUser(userId: ID!): [Loop]
+    type Mutation {
+        saveLoop(input: LoopInput!): User
     }
 
 `

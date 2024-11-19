@@ -50,12 +50,12 @@ const schema = makeExecutableSchema({
 
 const apolloServer = new ApolloServer({
   schema,
-  context: ({ req }) => {
-    const token = req.headers.authorization?.split(" ")[1] || '';
-    const payload = verifyToken(token);
-    const userId = payload ? payload.userId : null;
-    return { userId };
-  },
+  // context: ({ req }) => {
+  //   const token = req.headers.authorization?.split(" ")[1] || '';
+  //   const payload = verifyToken(token);
+  //   const userId = payload ? payload.userId : null;
+  //   return { userId };
+  // },
 });
 
 

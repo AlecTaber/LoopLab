@@ -80,7 +80,7 @@ const CanvasComponent: React.FC = () => {
             const title = `My Loop - ${new Date().toLocaleString()}`;
             console.log('Payload for save loop mutation:', { title, frames: validFrames });
             const { data } = await saveLoop({
-                variables: { title, frames: formattedFrames },
+                variables: {input: {title, frames: formattedFrames}},
             });
 
             console.log('Loop saved successfully:', data.saveLoop);
