@@ -3,6 +3,7 @@ import { gql } from 'apollo-server-express';
 const loopTypeDefs = gql`
     type Loop {
         _id: ID!
+        userId: ID!
         title: String!
         frames: [Frame!]!
     }
@@ -20,6 +21,11 @@ const loopTypeDefs = gql`
         frameId: String!
         canvasImg: String!
     }
+
+    type Query {
+        getLoopsByUser(userId: ID!): [Loop]
+    }
+
 `
 
 export default loopTypeDefs;
