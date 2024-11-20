@@ -3,14 +3,11 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { ApolloServer } from 'apollo-server-express';
 import connection from './config/connection.js';
-// import jwt from 'jsonwebtoken'
-import userTypeDefs from './typeDefs/userTypeDefs.js';
-import userResolvers from './resolvers/userResolvers.js';
-import loopResolvers from './resolvers/loopResolvers.js';
-import loopTypeDefs from './typeDefs/loopTypeDefs.js';
-import commentTypeDefs from './typeDefs/commentTypeDefs.js';
-import commentResolvers from './resolvers/commentResolvers.js';
+
+import resolvers from './resolvers/index.js';
+import typeDefs from './typeDefs/index.js';
 import { makeExecutableSchema } from '@graphql-tools/schema';
+
 import dotenv from 'dotenv';
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 
@@ -46,8 +43,8 @@ io.on('connection', (socket: Socket) => {
 
 // Define GraphQL schema
 const schema = makeExecutableSchema({
-  typeDefs: [userTypeDefs, loopTypeDefs, commentTypeDefs],
-  resolvers: [userResolvers, loopResolvers, commentResolvers],
+  typeDefs: typeDefs,
+  resolvers: resolvers,
 });
 
 const apolloServer = new ApolloServer({
