@@ -14,6 +14,7 @@ const NavBar: React.FC = () => {
         }, 500); // Ensures loading screen is shown for at least 0.5 seconds
     };
 
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -29,6 +30,7 @@ const NavBar: React.FC = () => {
                 <button onClick={() => handleNavigation("/canvas")} className="link text-white hover:text-gray-200">Canvas</button>
                 <button onClick={() => handleNavigation("/profile")} className="link text-white hover:text-gray-200">My Profile</button>
             </nav>
+            
             <h3 className="mt-4 text-indigo-600">Loop Lab NavBar</h3>
         </div>
     );

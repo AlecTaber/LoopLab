@@ -2,12 +2,11 @@ import React, { useRef, useState, useEffect, ChangeEvent } from "react"
 import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
 import { SAVE_LOOP } from "./mutations";
+import Auth from "./auth.js";
 import "../pages/canvasPage.css";
 
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
-// import { colorSpace } from "@cloudinary/url-gen/actions/delivery";
-//import saveLoop from "./canvasTools/canvasSave";
 
 // eslint-disable-next-line
 var canvasWidth = 500 | 0;
@@ -16,6 +15,7 @@ var canvasHeight = 500 | 0;
 
 //should update the page depending on which pixel was clicked on.
 const CanvasComponent: React.FC = () => {
+
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const pixelSize = 10;
 
@@ -80,7 +80,7 @@ const CanvasComponent: React.FC = () => {
             const title = `My Loop - ${new Date().toLocaleString()}`;
             console.log('Payload for save loop mutation:', { title, frames: validFrames });
             const { data } = await saveLoop({
-                variables: { title, frames: formattedFrames },
+                variables: {input: {title, frames: formattedFrames}},
             });
 
             console.log('Loop saved successfully:', data.saveLoop);
@@ -387,87 +387,99 @@ const CanvasComponent: React.FC = () => {
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
+    
+        //draw the grid
         drawGrid(ctx);
         saveCurrentFrameData();
     }, []);
 
     return (
-        <div className="canvasComponentContainer">
-            <div className="framesContainer">
-                {frames.map((frame, index) => (
-                    <button key={frame.id} onClick={() => switchFrame(index)} disabled={isPlaying}>
-                        {frame.canvasImg && (
-                            <img
-                                src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg}
-                                width="60"
-                                height="60"
-                                alt={`Frame ${index + 1} Thumbnail`}
-                            />
-                        )}
-                    </button>
-                ))}
-                <button onClick={handleNewFrame}>New Frame</button>
+        <div>
+            {Auth.loggedIn() ? (
+                <div className="canvasComponentContainer">
+                <div className="framesContainer">
+                    {frames.map((frame, index) => (
+                        <button key={frame.id} onClick={() => switchFrame(index)} disabled={isPlaying}>
+                            {frame.canvasImg && (
+                                <img
+                                    src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg}
+                                    width="60"
+                                    height="60"
+                                    alt={`Frame ${index + 1} Thumbnail`}
+                                />
+                            )}
+                        </button>
+                    ))}
+                    <button onClick={handleNewFrame}>New Frame</button>
+                </div>
+        
+                {/* Add a wrapper div to make the canvas responsive */}
+                <div className="responsive-canvas">
+                    <canvas
+                        id="paintMain"
+                        ref={canvasRef}
+                        width={canvasWidth}
+                        height={canvasHeight}
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUpLeave}
+                        onMouseLeave={handleMouseUpLeave}
+                        style={{ border: "1px solid blue" }}
+                    ></canvas>
+                </div>
+        
+                <div className="componentsContainer">
+                    <div>
+                        <label>
+                            Brush Size:{" "}
+                            <input
+                                type="text"
+                                name="brushSize"
+                                value={brushSize || ""}
+                                onChange={(e: any) => {
+                                    handleBrushSizeChange(e);
+                                }}
+                                className="brushSize"
+                            ></input>
+                        </label>
+                    </div>
+        
+                    <div className="hexColorPicker">
+                        <HexColorPicker color={colorCode} onChange={changeColor} />
+                    </div>
+        
+                    <div className="colorCodeContainer">
+                        <label className="hex">
+                            Hex Code:{" "}
+                            <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
+                        </label>
+                    </div>
+        
+                    <div className="clear-erase">
+                        <button className="clear" onClick={clearCanvas}>
+                            Clear
+                        </button>
+                        <button className="erase" onClick={() => setClear(true)}>
+                            Eraser
+                        </button>
+                        <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                    </div>
+        
+                    <div>
+                        <button className="saveLoop" onClick={handleLoopSave}>
+                            Save Loop
+                        </button>
+                    </div>
+                </div>
             </div>
-    
-            {/* Add a wrapper div to make the canvas responsive */}
-            <div className="responsive-canvas">
-                <canvas
-                    id="paintMain"
-                    ref={canvasRef}
-                    width={canvasWidth}
-                    height={canvasHeight}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUpLeave}
-                    onMouseLeave={handleMouseUpLeave}
-                    style={{ border: "1px solid blue" }}
-                ></canvas>
-            </div>
-    
-            <div className="componentsContainer">
+            ) : (
                 <div>
-                    <label>
-                        Brush Size:{" "}
-                        <input
-                            type="text"
-                            name="brushSize"
-                            value={brushSize || ""}
-                            onChange={(e: any) => {
-                                handleBrushSizeChange(e);
-                            }}
-                            className="brushSize"
-                        ></input>
-                    </label>
+                    <h3>User Not Signed in!</h3>
                 </div>
-    
-                <div className="hexColorPicker">
-                    <HexColorPicker color={colorCode} onChange={changeColor} />
-                </div>
-    
-                <div className="colorCodeContainer">
-                    <label className="hex">
-                        Hex Code:{" "}
-                        <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
-                    </label>
-                </div>
-    
-                <div className="clear-erase">
-                    <button className="clear" onClick={clearCanvas}>
-                        Clear
-                    </button>
-                    <button className="erase" onClick={() => setClear(true)}>
-                        Eraser
-                    </button>
-                    <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
-                </div>
-    
-                <div>
-                    <button className="saveLoop" onClick={handleLoopSave}>
-                        Save Loop
-                    </button>
-                </div>
-            </div>
+            )}
         </div>
+        
+        
     );
     
 }

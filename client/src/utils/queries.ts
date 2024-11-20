@@ -6,6 +6,14 @@ export const QUERY_USER = gql`
         _id
         username
         email
+        loops {
+            _id
+            title
+            frames {
+                frameId
+                canvasImg
+                }
+            }
         }
     }
 `;
@@ -16,18 +24,26 @@ export const QUERY_ME = gql`
             _id
             username
             email
+            loops {
+                _id
+                title
+                frames {
+                    frameId
+                    canvasImg
+                }
+            }
         }
     }
 `;
 
-export const QUERY_LOOPS = gql`
- query loop(id: $id) {
-    id
-    title
-    frames {
-        id
-        canvasImg
-        data
-    }
- }
-`;
+// export const QUERY_LOOPS = gql`
+//  query loop(id: $id) {
+//     id
+//     title
+//     frames {
+//         id
+//         canvasImg
+//         data
+//     }
+//  }
+// `;

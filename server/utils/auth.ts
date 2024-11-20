@@ -1,10 +1,18 @@
 import { jwtDecode } from 'jwt-decode';
 
 export const getUserDataFromToken = () => {
-  const token = localStorage.getItem('token');
-  if (token) {
     try {
+      const token = localStorage.getItem('token');
+      if(!token){
+        throw new Error("Token does not exist!")
+      }
+
+      console.log("Token", token);
+
       const decoded = (jwtDecode as any)(token);
+
+      console.log("UserId:", decoded.userId);
+      console.log("Username:", decoded.username);
       
       return {
         userId: decoded.userId,
@@ -14,6 +22,4 @@ export const getUserDataFromToken = () => {
       console.error("Failed to decode token", error);
       return null;
     }
-  }
-  return null;
 };
