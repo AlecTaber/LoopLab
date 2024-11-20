@@ -33,11 +33,11 @@ const userResolvers = {
                     throw new Error("Username is already in use");
                 }
             };
-            const hashedPassword = await bycrypt.hash(password, 12);
+            
             const newUser = new User({
                 username,
                 email,
-                password: hashedPassword,
+                password
             });
             await newUser.save();
             const token = generateToken(newUser.id.toString());

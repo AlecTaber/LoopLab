@@ -2,7 +2,6 @@ import { gql } from 'apollo-server-express';
 
 const loopTypeDefs = gql`
     type Loop {
-        _id: ID!
         title: String!
         frames: [Frame!]!
     }
@@ -12,14 +11,20 @@ const loopTypeDefs = gql`
         canvasImg: String
     }
 
-    type Mutation {
-        saveLoop(title: String!, frames: [FrameInput!]!): Loop
-    }
-
     input FrameInput {
         frameId: String!
         canvasImg: String!
     }
+    
+    input LoopInput {
+        title: String!,
+        frames: [FrameInput!]!
+    }
+
+    type Mutation {
+        saveLoop(input: LoopInput!): User
+    }
+
 `
 
 export default loopTypeDefs;
