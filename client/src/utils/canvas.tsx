@@ -112,17 +112,31 @@ const CanvasComponent: React.FC = () => {
     const saveCurrentFrameData = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-      
-        canvas.toBlob((blob) => {
-          if (blob) {
-            setFrames((prevFrames) => {
-                const updatedFrames = [...prevFrames];
-                updatedFrames[activeFrameIndex].canvasImg = blob;
-                return updatedFrames;
-            });
+    
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return;
+    
+        // Check if the canvas has non-empty pixels
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+        const isEmpty = pixels.every((value, index) => (index + 1) % 4 === 0 || value === 255); // Only check R, G, B channels
+    
+        if (isEmpty) {
+            console.log("Empty canvas, skipping save.");
+            return; // Do not save if the canvas is empty
         }
+    
+        canvas.toBlob((blob) => {
+            if (blob) {
+                setFrames((prevFrames) => {
+                    const updatedFrames = [...prevFrames];
+                    updatedFrames[activeFrameIndex].canvasImg = blob;
+                    return updatedFrames;
+                });
+            }
         }, 'image/png');
-      };
+    };
+    
       
 
       const handleNewFrame = async () => {
