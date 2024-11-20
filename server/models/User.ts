@@ -1,15 +1,15 @@
-import mongoose, {Document, Schema} from "mongoose";
+import mongoose, {Document, Schema, Types} from "mongoose";
 import bcrypt from 'bcryptjs';
 
-import loop from "./loop.js";
-import type { ILoop } from "./loop.js";
+// import loop from "./loop.js";
+// import type { ILoop } from "./loop.js";
 
 export interface IUser extends Document {
   id: string;
   username: string;
   email: string;
   password: string;
-  loops: ILoop[];
+  loops: Types.ObjectId[];
   isCorrectPassword(password: string): Promise<Boolean>;
   loopCount: number;
 }
@@ -18,7 +18,7 @@ const userSchema = new Schema<IUser>({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  loops: [loop],
+  loops: [{type: Schema.Types.ObjectId, ref: "Loop"}],
   },
   {
     toJSON: {

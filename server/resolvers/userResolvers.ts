@@ -4,12 +4,14 @@ import { generateToken } from '../utils/jwt.js';
 
 const userResolvers = {
     Query: {
-        me: async (_: any, __: any, { userId }: { userId: string }) => {
-            if (!userId) {
+        me: async (_: any, __: any, ___: any, context: any) => {
+            if (!context.userId) {
                 throw new Error("Not authenticated");
             }
-            const user = await
-                User.findById(userId);
+
+            const user = await User.findById(context.userId).populate('loops');
+            console.log("User:", user)
+
             if (!user) {
                 throw new Error("User not found");
             }

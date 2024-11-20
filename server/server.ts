@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { ApolloServer } from 'apollo-server-express';
 import connection from './config/connection.js';
-import jwt from 'jsonwebtoken'
+// import jwt from 'jsonwebtoken'
 import userTypeDefs from './typeDefs/userTypeDefs.js';
 import userResolvers from './resolvers/userResolvers.js';
 import loopResolvers from './resolvers/loopResolvers.js';
@@ -13,6 +13,8 @@ import commentResolvers from './resolvers/commentResolvers.js';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import dotenv from 'dotenv';
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
+
+import { verifyToken } from './utils/jwt.js';
 
 dotenv.config();
 
@@ -51,11 +53,15 @@ const schema = makeExecutableSchema({
 const apolloServer = new ApolloServer({
   schema,
   context: ({ req }) => {
+    if (!req.headers.authorization?.startsWith('Bearer ')) {
+      console.warn("Authorization header is missing or invalid.");
+      return {};
+    }
     const token = req.headers.authorization?.split(" ")[1] || '';
     // console.log('Token:', token)
     const payload = verifyToken(token);
     // console.log("Payload", payload)
-    const userId = payload ? payload.user.userId : null;
+    const userId = payload ? payload.userId : null;
     // console.log("UserId", userId)
     return { userId };
 

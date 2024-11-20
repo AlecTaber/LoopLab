@@ -13,9 +13,9 @@ export const generateToken = (userId: string): string => {
     return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1h' });
 };
 
-export const verifyToken = (token: string): { user: {userId: string } } | null => {
+export const verifyToken = (token: string): { userId: string } | null => {
     try {
-        return jwt.verify(token, JWT_SECRET, {maxAge: '1h'}) as { user: {userId: string}};
+        return jwt.verify(token, JWT_SECRET, {maxAge: '1h'}) as { userId: string};
     } catch (err: any){
         console.error("Token not working,", err)
         return null; // Return null instead of throwing an error
