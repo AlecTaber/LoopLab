@@ -17,10 +17,6 @@ const LoopResolvers = {
     Mutation: {
         saveLoop: async (_: any, { input }: AddLoopArgs, context: any) => {
             try {
-                console.log("Context:", context)
-
-                console.log("received title: ", input.title);
-                console.log("received frames: ", input.frames);
 
                 if (!input.title || !input.frames || !input.frames.length) {
                     throw new Error("invalid input");
@@ -32,9 +28,9 @@ const LoopResolvers = {
                     throw new Error("invalid frame data detected");
                 } 
 
-                if(context.user){
+                if(context.userId){
                     const updatedUser = await User.findByIdAndUpdate(
-                        {_id: context.user.userId},
+                        {_id: context.userId},
                         {$addToSet: {loops: input}},
                         {new: true},
                     );
@@ -44,7 +40,7 @@ const LoopResolvers = {
                     return updatedUser
                 }
 
-                return console.error("User does not exist!")
+                throw new AuthenticationError("User does not exist!")
 
             } catch (error) {
                 console.error("error saving loop: ", error);

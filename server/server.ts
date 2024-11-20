@@ -51,17 +51,14 @@ const schema = makeExecutableSchema({
 const apolloServer = new ApolloServer({
   schema,
   context: ({ req }) => {
-    const token = req.headers.authorization?.split("Bearer ")[1] || '';
-    if(token){
-      try {
-        const user = jwt.verify(token, process.env.JWT_SECRET || "");
-        return {user};
+    const token = req.headers.authorization?.split(" ")[1] || '';
+    // console.log('Token:', token)
+    const payload = verifyToken(token);
+    // console.log("Payload", payload)
+    const userId = payload ? payload.user.userId : null;
+    // console.log("UserId", userId)
+    return { userId };
 
-      } catch (err: any){
-        console.error("Invalid or expired token.")
-      }
-    }
-    return {}
   },
 });
 
