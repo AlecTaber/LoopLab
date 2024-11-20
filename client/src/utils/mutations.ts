@@ -28,14 +28,17 @@ export const ADD_USER = gql`
 `;
 
 export const SAVE_LOOP = gql`
-  mutation SaveLoop($input: LoopInput!) {
+  mutation saveLoop($input: LoopInput!) {
     saveLoop(input: $input) {
       _id
-      title
-      frames {
-        frameId
-        canvasImg
+      loops {
+        title
+        frames {
+          frameId
+          canvasImg
+        }
       }
+      
     }
   }
 `;

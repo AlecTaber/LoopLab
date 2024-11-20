@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { ApolloServer } from 'apollo-server-express';
 import connection from './config/connection.js';
-import { verifyToken } from './utils/jwt.js';
+import jwt from 'jsonwebtoken'
 import userTypeDefs from './typeDefs/userTypeDefs.js';
 import userResolvers from './resolvers/userResolvers.js';
 import loopResolvers from './resolvers/loopResolvers.js';
@@ -58,6 +58,7 @@ const apolloServer = new ApolloServer({
     const userId = payload ? payload.user.userId : null;
     // console.log("UserId", userId)
     return { userId };
+
   },
 });
 

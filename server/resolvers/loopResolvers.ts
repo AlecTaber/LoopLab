@@ -35,6 +35,8 @@ const LoopResolvers = {
                         {new: true},
                     );
 
+                    console.log("Saved Loop successfully!", updatedUser);
+
                     return updatedUser
                 }
 
