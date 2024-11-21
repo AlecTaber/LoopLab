@@ -1,4 +1,4 @@
-import {Document, Schema} from "mongoose";
+import mongoose, {Document, Schema} from "mongoose";
 
 export interface IFrame {
     frameId: string;
@@ -6,6 +6,7 @@ export interface IFrame {
 }
 
 export interface ILoop extends Document {
+    userId: mongoose.Types.ObjectId,
     title: string;
     frames: IFrame[];
 }
@@ -15,9 +16,12 @@ const frameSchema = new Schema<IFrame>({
     canvasImg: { type: String, required: true },
 });
 
-const loopSchema = new Schema<ILoop>({
+export const loopSchema = new Schema<ILoop>({
+    userId: {type: Schema.Types.ObjectId, ref: "User", required: true},
     title: { type: String, required: true },
     frames: [frameSchema],
 });
 
-export default loopSchema;
+const Loop = mongoose.model<ILoop>("Loop", loopSchema)
+
+export default Loop;
