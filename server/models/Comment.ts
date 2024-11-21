@@ -17,10 +17,11 @@ const commentSchema = new Schema<IComment>({
     body: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     loopId: { type: Schema.Types.ObjectId, ref: "Loop", required: true },
-    likes: [likeSchema]
+    likes: [likeSchema],
+    likeCount: {type: Number, default: 0}
 });
 
-commentSchema.virtual("likeCount").get(function() {
+commentSchema.virtual("virtualLikeCount").get(function() {
   return this.likes.length
 })
 

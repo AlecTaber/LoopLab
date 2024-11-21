@@ -2,7 +2,9 @@ import { gql } from 'apollo-server-express';
 
 const likeTypeDefs = gql`
     type Like {
-        userId: ID!
+        userId: ID
+        loopId: ID
+        commentId: ID
     }
 
     type Mutation {

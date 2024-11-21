@@ -1,6 +1,11 @@
 import { gql } from 'apollo-server-express';
 
 const userTypeDefs = gql`
+  type LikeUser {
+    loop: [Like]
+    comment: [Like]
+  }
+
   type User {
     _id: ID!
     username: String!
@@ -8,6 +13,7 @@ const userTypeDefs = gql`
     password: String!
     loops: [Loop]
     comments: [Comment]
+    likes: [LikeUser]
   }
 
   type AuthPayload {
