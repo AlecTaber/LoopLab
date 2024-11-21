@@ -8,7 +8,6 @@ const loopTypeDefs = gql`
         frames: [Frame!]!
         comments: [Comment]
         likes: [Like]
-        likeCount: number
     }
 
     type Frame {

@@ -3,13 +3,12 @@ import { gql } from 'apollo-server-express';
 //add LoopId: ID! to the Comment type once the Post model is created
 const commentTypeDefs = gql`
   type Comment {
-    id: ID!
+    _id: ID!
     body: String!
     username: String!
     userId: ID!
     loopId: ID!
     likes: [Like]
-    likeCount: number
   }
 
   type CommentPayload {
@@ -18,7 +17,8 @@ const commentTypeDefs = gql`
 
   input CreateCommentInput {
     body: String!
-    postId: ID!
+    username: String!
+    loopId: ID!
   }
 
   input EditCommentInput {
@@ -26,8 +26,8 @@ const commentTypeDefs = gql`
   }
 
   type Query {
-    getCommentsByUser(userId: ID!): [Comment]
-    getCommentsByPost(postId: ID!): [Comment]
+    getCommentsByUser(_id: ID!): [Comment]
+    getCommentsByLoop(_id: ID!): [Comment]
   }
 
   type Mutation {

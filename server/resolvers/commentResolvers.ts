@@ -1,10 +1,11 @@
 import Comment from '../models/Comment.js';
-import { LikeArgs } from './userResolvers.js';
+import { LikeArgs } from './likeResolvers.js';
 import { getUserDataFromToken } from '../utils/auth.js';
 
 import User from '../models/User.js';
 import Loop from '../models/Loop.js';
 import { LoopArgs } from './loopResolvers.js';
+import { AuthenticationError } from 'apollo-server-express';
 
 export interface CommentArgs {
     _id: any,
@@ -27,9 +28,9 @@ interface AddCommentArgs {
 
 const commentResolvers = {
     Query: {
-        getCommentsByUser: async (_: any, { userId }: { userId: string }) => {
+        getCommentsByUser: async (_: any, { _id }: CommentArgs) => {
             try {
-                const comments = await Comment.find({ userId });
+                const comments = await Comment.find({ userId: _id });
                 if(!comments){
                     return []
                 }
@@ -53,14 +54,15 @@ const commentResolvers = {
 
                 return comments
             } catch (error) {
+                console.error("Error getting comments from loop!", error);
                 throw new Error("Error getting comments by Loop");
             }
         },
     },
 
     Mutation: {
+        //add add like mutation
         createComment: async (_: any, {input}: AddCommentArgs, context: any) => {
-
 
             const comment = new Comment({
                 body: input.body,
@@ -68,6 +70,27 @@ const commentResolvers = {
                 userId: context.userId,
                 loopId: input.loopId
             });
+
+            //update user
+            const updatedUser = await User.findByIdAndUpdate(
+                context.userId,
+                {$addToSet: {comments: comment.id}},
+                {new: true}
+            );
+
+            if(!updatedUser){
+                throw new AuthenticationError("Could not find User!")
+            }
+
+            const updatedLoop = await Loop.findByIdAndUpdate(
+                input.loopId,
+                {$addToSet: {comments: comment.id}},
+                {new: true}
+            )
+
+            if(!updatedLoop){
+                throw new Error("No Loop with this ID exists!")
+            }
 
             await comment.save();
             return comment;
