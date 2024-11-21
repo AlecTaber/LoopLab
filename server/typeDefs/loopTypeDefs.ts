@@ -2,6 +2,7 @@ import { gql } from 'apollo-server-express';
 
 const loopTypeDefs = gql`
     type Loop {
+        _id: ID!
         userId: ID!
         title: String!
         frames: [Frame!]!
@@ -22,8 +23,14 @@ const loopTypeDefs = gql`
         frames: [FrameInput!]!
     }
 
+    type Query {
+        getLoops: [Loop!]!
+        getLoop(_id: ID!): Loop
+    }
+
     type Mutation {
         saveLoop(input: LoopInput!): Loop!
+        deleteLoop(_id: String!): Loop!
     }
 
 `

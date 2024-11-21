@@ -6,7 +6,8 @@ export interface IFrame {
 }
 
 export interface ILoop extends Document {
-    userId: mongoose.Types.ObjectId,
+    id: string;
+    userId: mongoose.Types.ObjectId;
     title: string;
     frames: IFrame[];
 }

@@ -16,8 +16,8 @@ const userTypeDefs = gql`
 
   type Query {
     me: User
-    getLoops: [Loop!]!
-    getLoop(loopId: ID!): Loop
+    getUserbyId(_id: ID!): User!
+    getUserByLoop(_id: ID!): User!
   }
 
   type Mutation {

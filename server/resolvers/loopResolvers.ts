@@ -2,6 +2,16 @@ import Loop from "../models/loop.js";
 import User from "../models/User.js";
 import { AuthenticationError } from "apollo-server-express";
 
+export interface LoopArgs {
+    _id: any,
+    userId: any,
+    title: string,
+    frames: {
+        frameId: string,
+        canvasImg: string
+    }[];
+}
+
 interface AddLoopArgs {
     input: {
         title: string
@@ -13,6 +23,15 @@ interface AddLoopArgs {
 }
 
 const LoopResolvers = {
+    Query: {
+        getLoops: async () => {
+            return Loop.find();
+        },
+        getLoop: async (_parent: any, {_id}: LoopArgs) => {
+            return Loop.findById(_id);
+        },
+    }, 
+
     Mutation: {
         saveLoop: async (_: any, { input }: AddLoopArgs, context: any) => {
             try {
@@ -39,25 +58,12 @@ const LoopResolvers = {
 
                 await User.findByIdAndUpdate(
                     context.userId,
-                    {$addToSet: {loops: newLoop.userId}},
+                    {$addToSet: {loops: newLoop.id}},
                     {new: true}
                 );
 
                 return newLoop;
 
-                // if(context.userId){
-                //     const updatedUser = await User.findByIdAndUpdate(
-                //         {_id: context.userId},
-                //         {$addToSet: {loops: input}},
-                //         {new: true},
-                //     );
-
-                //     console.log("Saved Loop successfully!", updatedUser);
-
-                //     return updatedUser
-                // }
-
-                // throw new AuthenticationError("User does not exist!")
 
             } catch (error) {
                 console.error("error saving loop: ", error);
@@ -65,7 +71,29 @@ const LoopResolvers = {
             }
         },
 
-        // deleteLoop: async(_parent: any, {loopId})
+        deleteLoop: async(_parent: any, {_id}: LoopArgs, context: any) => {
+            if(context.userId){
+                const deletedLoop = await Loop.findByIdAndDelete(_id);
+
+                if(!deletedLoop){
+                    throw new Error("Could not find Loop!")
+                };
+
+                const updatedUser = await User.findByIdAndUpdate(
+                    {_id: context.userId},
+                    {$pull: {loops: {_id: _id}}},
+                    {new: true}
+                );
+
+                if(!updatedUser){
+                    throw new AuthenticationError('Could not find user!')
+                };
+
+                return deletedLoop;
+            }
+
+            throw new AuthenticationError("You must be logged in to delete a loop!")
+        }
     }
 }
 

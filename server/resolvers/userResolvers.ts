@@ -1,10 +1,20 @@
 import bycrypt from 'bcryptjs';
 import User, { IUser } from '../models/User.js';
+import Loop from '../models/loop.js';
+import { LoopArgs } from './loopResolvers.js';
 import { generateToken } from '../utils/jwt.js';
+
+
+interface UserArgs {
+    _id: any,
+    username: string,
+    email: string,
+    loops: [LoopArgs],
+}
 
 const userResolvers = {
     Query: {
-        me: async (_: any, __: any, ___: any, context: any) => {
+        me: async (_: any, __: any, context: any) => {
             if (!context.userId) {
                 throw new Error("Not authenticated");
             }
@@ -17,6 +27,29 @@ const userResolvers = {
             }
             return user;
         },
+        getUserbyId: async (_parent: any, {_id}: UserArgs ) => {
+            return User.findById(_id).populate("loops");
+        },
+        getUserByLoop: async (_parent: any, {_id}: LoopArgs) => {
+            try {
+                const loop = await Loop.findById(_id);
+                if (!loop) {
+                    throw new Error("Loop not found");
+                }
+    
+                const user = await User.findById(loop.userId).populate('loops');
+                if (!user) {
+                    throw new Error("User not found");
+                }
+                
+                return user;
+
+            } catch (error) {
+                console.error("Error in getUserByLoop:", error);
+                throw new Error("Failed to fetch user by loop ID");
+            }
+        },
+        
     },
 
     Mutation: {
