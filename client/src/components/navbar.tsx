@@ -1,6 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import "../navbar.css";
+import { AiFillHome } from "react-icons/ai";
+import { FaPlusSquare } from "react-icons/fa";
+import { FaUserAlt } from "react-icons/fa";
+import { FaInfinity } from "react-icons/fa";
+
+
 
 const NavBar: React.FC = () => {
     const [loading, setLoading] = useState(false);
@@ -25,14 +31,25 @@ const NavBar: React.FC = () => {
 
     return (
         <div className="navbar-container">
-            <nav className="flex items-center space-x-4 p-4 bg-indigo-600">
-                <button onClick={() => handleNavigation("/home")} className="link text-white hover:text-gray-200">Home</button>
-                <button onClick={() => handleNavigation("/canvas")} className="link text-white hover:text-gray-200">Canvas</button>
-                <button onClick={() => handleNavigation("/profile")} className="link text-white hover:text-gray-200">My Profile</button>
-            </nav>
-            
-            <h3 className="mt-4 text-indigo-600">Loop Lab NavBar</h3>
+    <nav className="flex items-center justify-between p-4 bg-indigo-600">
+        {/* Left Section: Navigation Buttons */}
+        <div className="flex items-center space-x-4">
+            <button onClick={() => handleNavigation("/home")} className="link text-white text-4xl hover:text-gray-200"><AiFillHome /></button>
+            <button onClick={() => handleNavigation("/canvas")} className="link text-white text-4xl hover:text-gray-200"><FaPlusSquare /></button>
+            <button onClick={() => handleNavigation("/profile")} className="link text-white text-4xl hover:text-gray-200"><FaUserAlt /></button>
         </div>
+
+        {/* Center Section: Logo */}
+        <h1 className="text-4xl text-white font-bold flex items-center space-x-1">
+            <span>L</span>
+            <FaInfinity/>
+            <span>PLAB</span>
+        </h1>
+
+        {/* Placeholder for Right Section if Needed */}
+        <div className="w-16"></div>
+    </nav>
+</div>
     );
 };
 
