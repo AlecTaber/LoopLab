@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_LOOPS } from '../utils/queries';
+import { FaHeart } from "react-icons/fa";
+import { FaCommentAlt } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
+import { FaBackward } from "react-icons/fa";
+import { FaForward } from "react-icons/fa";
+
 
 const HomePage: React.FC = () => {
   const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
@@ -61,7 +67,7 @@ const HomePage: React.FC = () => {
   if (error) return <div>Error fetching loops: {error.message}</div>;
 
   return (
-    <div className="min-h-screen bg-blue-100 p-6 space-y-8">
+    <div className="min-h-screen bg-indigo-100 p-6 space-y-8">
     {loops.map((loop: any) => (
       <div
         key={loop._id}
@@ -71,7 +77,6 @@ const HomePage: React.FC = () => {
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         }}
       >
-        <h2 className="text-lg font-bold mb-4">{loop.title}</h2>
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Loop Content */}
           <div className="w-full lg:w-1/3 flex justify-center items-center">
@@ -79,27 +84,27 @@ const HomePage: React.FC = () => {
               <img
                 src={loop.frames?.[frameIndices[loop._id] || 0]?.canvasImg || ''}
                 alt={`Frame ${frameIndices[loop._id] || 0}`}
-                className="object-cover w-full h-full rounded-lg"
+                className="object-cover w-full h-full rounded-lg shadow-lg border-indigo-900 border-2"
               />
             </div>
           </div>
           {/* Right Side */}
           <div className="w-full lg:w-2/3 flex flex-col">
             <div className="w-full h-full p-6 flex flex-col">
-              <div className="bg-blue-500 text-white flex justify-between items-center p-3 rounded-t-lg">
-                <button className="px-4 py-1 rounded-lg bg-white text-blue-500 text-sm hover:bg-gray-200">
-                  UserPage
+              <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
+                <button className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200">
+                  <FaUser/>
                 </button>
                 <div className="flex space-x-2">
-                  <button className="px-4 py-1 rounded-lg bg-gray-200 text-blue-500 text-sm hover:bg-white">
-                    Like
+                  <button className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200">
+                    <FaHeart/>
                   </button>
-                  <button className="px-4 py-1 rounded-lg bg-gray-200 text-blue-500 text-sm hover:bg-white">
-                    Comment
+                  <button className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200">
+                  <FaCommentAlt/>
                   </button>
                 </div>
               </div>
-              <div className="bg-gray-50 p-4 rounded-b-lg flex-1 mt-4">
+              <div className="bg-gray-50 p-4 rounded-b-lg flex-1 mt-4 shadow-md">
                 <h3 className="text-sm font-bold mb-2">Comments</h3>
                 {Array(3)
                   .fill('This is a sample comment')
@@ -116,17 +121,17 @@ const HomePage: React.FC = () => {
     ))}
     <footer className="flex justify-between">
       <button
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm"
+        className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
         disabled={currentPage === 1}
         onClick={() => handlePageChange('prev')}
       >
-        Previous
+        <FaBackward/>
       </button>
       <button
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm"
+        className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
         onClick={() => handlePageChange('next')}
       >
-        Next
+        <FaForward/>
       </button>
     </footer>
   </div>
