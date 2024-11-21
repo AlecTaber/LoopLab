@@ -30,6 +30,7 @@ const loopTypeDefs = gql`
 
     type Mutation {
         saveLoop(input: LoopInput!): Loop!
+        deleteLoop(_id: String!): Loop!
     }
 
 `
