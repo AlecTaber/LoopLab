@@ -1,8 +1,13 @@
 import bycrypt from 'bcryptjs';
 import User, { IUser } from '../models/User.js';
-import Loop from '../models/loop.js';
+import Loop from '../models/Loop.js';
 import { LoopArgs } from './loopResolvers.js';
+import { CommentArgs } from './commentResolvers.js';
 import { generateToken } from '../utils/jwt.js';
+
+export interface LikeArgs {
+    userId: any
+}
 
 
 interface UserArgs {
@@ -10,6 +15,12 @@ interface UserArgs {
     username: string,
     email: string,
     loops: [LoopArgs],
+    comments: [CommentArgs],
+    likes: {
+        loops: [LikeArgs],
+        comments: [LikeArgs],
+    },
+    loopCount: number
 }
 
 const userResolvers = {

@@ -3,12 +3,13 @@ import {ILike, likeSchema} from './Like.js'
 
 export interface IComment extends Document {
   id: string;
-  username: string;
   body: string;
+  username: string;
   //References to models to help link Mongo models
   userId: Types.ObjectId;
   loopId: Types.ObjectId;
   likes: [ILike];
+  likeCount: number
 }
 
 const commentSchema = new Schema<IComment>({

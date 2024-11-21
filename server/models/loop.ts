@@ -13,6 +13,7 @@ export interface ILoop extends Document {
     frames: IFrame[];
     comments: Types.ObjectId[];
     likes: [ILike];
+    likeCount: number
 }
 
 const frameSchema = new Schema<IFrame>({
