@@ -1,5 +1,6 @@
-import Loop from "../models/loop.js";
+import Loop from "../models/Loop.js";
 import User from "../models/User.js";
+import { LikeArgs } from "./likeResolvers.js";
 import { AuthenticationError } from "apollo-server-express";
 
 export interface LoopArgs {
@@ -10,6 +11,9 @@ export interface LoopArgs {
         frameId: string,
         canvasImg: string
     }[];
+    comments: [any]
+    likes: [LikeArgs],
+    likeCount: number
 }
 
 interface AddLoopArgs {
@@ -33,6 +37,7 @@ const LoopResolvers = {
     }, 
 
     Mutation: {
+        //add add like mutation
         saveLoop: async (_: any, { input }: AddLoopArgs, context: any) => {
             try {
 

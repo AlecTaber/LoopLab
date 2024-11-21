@@ -1,8 +1,12 @@
 import bycrypt from 'bcryptjs';
 import User, { IUser } from '../models/User.js';
-import Loop from '../models/loop.js';
+import Loop from '../models/Loop.js';
+import { LikeArgs } from './likeResolvers.js';
 import { LoopArgs } from './loopResolvers.js';
+import { CommentArgs } from './commentResolvers.js';
 import { generateToken } from '../utils/jwt.js';
+
+
 
 
 interface UserArgs {
@@ -10,6 +14,12 @@ interface UserArgs {
     username: string,
     email: string,
     loops: [LoopArgs],
+    comments: [CommentArgs],
+    likes: {
+        loops: [LikeArgs],
+        comments: [LikeArgs],
+    },
+    loopCount: number
 }
 
 const userResolvers = {
@@ -19,7 +29,7 @@ const userResolvers = {
                 throw new Error("Not authenticated");
             }
 
-            const user = await User.findById(context.userId).populate('loops');
+            const user = await User.findById(context.userId).populate('loops').populate("comments");
             console.log("User:", user)
 
             if (!user) {
@@ -28,7 +38,7 @@ const userResolvers = {
             return user;
         },
         getUserbyId: async (_parent: any, {_id}: UserArgs ) => {
-            return User.findById(_id).populate("loops");
+            return User.findById(_id).populate("loops").populate("comments");
         },
         getUserByLoop: async (_parent: any, {_id}: LoopArgs) => {
             try {
@@ -37,7 +47,7 @@ const userResolvers = {
                     throw new Error("Loop not found");
                 }
     
-                const user = await User.findById(loop.userId).populate('loops');
+                const user = await User.findById(loop.userId).populate('loops').populate("comments");
                 if (!user) {
                     throw new Error("User not found");
                 }

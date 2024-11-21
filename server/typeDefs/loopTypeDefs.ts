@@ -6,6 +6,8 @@ const loopTypeDefs = gql`
         userId: ID!
         title: String!
         frames: [Frame!]!
+        comments: [Comment]
+        likes: [Like]
     }
 
     type Frame {
