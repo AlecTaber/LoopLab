@@ -2,6 +2,16 @@ import Loop from "../models/loop.js";
 import User from "../models/User.js";
 import { AuthenticationError } from "apollo-server-express";
 
+export interface LoopArgs {
+    _id: any,
+    userId: any,
+    title: string,
+    frames: {
+        frameId: string,
+        canvasImg: string
+    }[];
+}
+
 interface AddLoopArgs {
     input: {
         title: string
@@ -13,6 +23,15 @@ interface AddLoopArgs {
 }
 
 const LoopResolvers = {
+    Query: {
+        getLoops: async () => {
+            return Loop.find();
+        },
+        getLoop: async (_parent: any, {_id}: LoopArgs) => {
+            return Loop.findById(_id);
+        },
+    }, 
+
     Mutation: {
         saveLoop: async (_: any, { input }: AddLoopArgs, context: any) => {
             try {
@@ -39,7 +58,7 @@ const LoopResolvers = {
 
                 await User.findByIdAndUpdate(
                     context.userId,
-                    {$addToSet: {loops: newLoop.userId}},
+                    {$addToSet: {loops: newLoop.id}},
                     {new: true}
                 );
 
