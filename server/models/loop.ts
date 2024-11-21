@@ -1,6 +1,7 @@
 import mongoose, {Document, Schema, Types} from "mongoose";
 import {ILike, likeSchema} from './Like.js';
 
+
 export interface IFrame {
     frameId: string;
     canvasImg: string;
@@ -22,12 +23,15 @@ const frameSchema = new Schema<IFrame>({
 });
 
 export const loopSchema = new Schema<ILoop>({
-    userId: {type: Schema.Types.ObjectId, ref: "User", required: true},
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     title: { type: String, required: true },
     frames: [frameSchema],
     comments: [{type: Schema.Types.ObjectId, ref: "Comment"}],
-    likes: [likeSchema]
-});
+    likes: [likeSchema],
+  },
+    { timestamps: true }
+);
+
 
 loopSchema.virtual("likeCount").get(function() {
     return this.likes.length

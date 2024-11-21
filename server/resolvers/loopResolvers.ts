@@ -29,7 +29,7 @@ interface AddLoopArgs {
 const LoopResolvers = {
     Query: {
         getLoops: async () => {
-            return Loop.find();
+            return Loop.find().sort({createdAt: -1});
         },
         getLoop: async (_parent: any, {_id}: LoopArgs) => {
             return Loop.findById(_id);

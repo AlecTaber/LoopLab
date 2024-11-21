@@ -31,7 +31,7 @@ const Login: React.FC = () => {
                 login(email: $email, password: $password) {
                     token
                     user {
-                        id
+                        _id
                         username
                         email
                     }

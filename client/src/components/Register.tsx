@@ -32,7 +32,7 @@ const Register: React.FC = () => {
                 register(username: $username, email: $email, password: $password) {
                     token
                     user {
-                        id
+                        _id
                         email
                         username
                     }
