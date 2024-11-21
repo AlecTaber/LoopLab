@@ -1,4 +1,4 @@
-import mongoose, {Document, Schema} from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IFrame {
     frameId: string;
@@ -18,10 +18,12 @@ const frameSchema = new Schema<IFrame>({
 });
 
 export const loopSchema = new Schema<ILoop>({
-    userId: {type: Schema.Types.ObjectId, ref: "User", required: true},
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     title: { type: String, required: true },
     frames: [frameSchema],
-});
+},
+    { timestamps: true }
+);
 
 const Loop = mongoose.model<ILoop>("Loop", loopSchema)
 

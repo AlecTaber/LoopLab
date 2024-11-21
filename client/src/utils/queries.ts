@@ -49,14 +49,15 @@ export const QUERY_ME = gql`
 // `;
 
 export const GET_LOOPS = gql`
-    query GetLoops {
-  getLoops {
-    userId
-    title
-    frames {
-      frameId
-      canvasImg
+  query GetLoops {
+    getLoops {
+      _id
+      userId
+      title
+      frames {
+        frameId
+        canvasImg
+      }
     }
   }
-}
 `;

@@ -399,7 +399,7 @@ const CanvasComponent: React.FC = () => {
                 <div className="canvasComponentContainer">
                 <div className="framesContainer">
                     {frames.map((frame, index) => (
-                        <button key={frame.id} onClick={() => switchFrame(index)} disabled={isPlaying}>
+                        <button key={`${frame.id}-${index}`} onClick={() => switchFrame(index)} disabled={isPlaying}>
                             {frame.canvasImg && (
                                 <img
                                     src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg}
