@@ -1,6 +1,6 @@
 import express, { Application } from 'express';
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { ApolloServer } from 'apollo-server-express';
 import connection from './config/connection.js';
 
@@ -27,18 +27,29 @@ app.use(graphqlUploadExpress({
 connection();
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
+
+
+// Export the io instance
+export const io = new Server(httpServer, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST'],
   },
 });
 
-io.on('connection', (socket: Socket) => {
-    console.log(`User connected: ${socket.id}`);
-    socket.on('disconnect', () => {
-        console.log(`User disconnected: ${socket.id}`);
-    });
+
+io.on("connection", (socket) => {
+  console.log(`User connected: ${socket.id}`);
+
+  // Listen for 'newLoop' event
+  socket.on("newLoop", (newLoop) => {
+    console.log("New loop received on server:", newLoop);
+    io.emit("newLoop", newLoop); // Broadcast to all clients
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
 });
 
 // Define GraphQL schema

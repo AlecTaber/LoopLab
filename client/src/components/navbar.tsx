@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import "../navbar.css";
 import { AiFillHome } from "react-icons/ai";
 import { FaPlusSquare } from "react-icons/fa";
-import { FaUserAlt } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 import { FaInfinity } from "react-icons/fa";
 
 
@@ -24,7 +24,7 @@ const NavBar: React.FC = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500"></div>
             </div>
         );
     }
@@ -36,7 +36,7 @@ const NavBar: React.FC = () => {
         <div className="flex items-center space-x-4">
             <button onClick={() => handleNavigation("/home")} className="link text-white text-4xl hover:text-gray-200"><AiFillHome /></button>
             <button onClick={() => handleNavigation("/canvas")} className="link text-white text-4xl hover:text-gray-200"><FaPlusSquare /></button>
-            <button onClick={() => handleNavigation("/profile")} className="link text-white text-4xl hover:text-gray-200"><FaUserAlt /></button>
+            
         </div>
 
         {/* Center Section: Logo */}
@@ -47,7 +47,7 @@ const NavBar: React.FC = () => {
         </h1>
 
         {/* Placeholder for Right Section if Needed */}
-        <div className="w-16"></div>
+        <button onClick={() => handleNavigation("/profile")} className="link text-white text-4xl hover:text-gray-200"><FaUser /></button>
     </nav>
 </div>
     );

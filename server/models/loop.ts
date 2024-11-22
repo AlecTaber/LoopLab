@@ -15,6 +15,8 @@ export interface ILoop extends Document {
     comments: Types.ObjectId[];
     likes: [ILike];
     likeCount: number
+    createdAt?: Date;
+    updatedAt?: Date; 
 }
 
 const frameSchema = new Schema<IFrame>({
