@@ -79,7 +79,6 @@ const LoopResolvers = {
 
                 return newLoop;
 
-
             } catch (error) {
                 console.error("error saving loop: ", error);
                 throw new Error("error saving loop");

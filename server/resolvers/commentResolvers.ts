@@ -7,6 +7,8 @@ import Loop from '../models/loop.js';
 import { LoopArgs } from './loopResolvers.js';
 import { AuthenticationError } from 'apollo-server-express';
 
+import { io } from '../server.js';
+
 export interface CommentArgs {
     _id: any,
     body: string,
@@ -93,6 +95,15 @@ const commentResolvers = {
             }
 
             await comment.save();
+
+            io.emit("newComment", {
+                _id: comment.id,
+                body: comment.body,
+                username: comment.username,
+                userId: comment.userId,
+                loopId: comment.loopId
+            });
+
             return comment;
         },
 
