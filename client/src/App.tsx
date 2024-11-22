@@ -9,9 +9,8 @@ import {
 } from '@apollo/client';
 import {setContext} from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
-// import { Cloudinary } from '@cloudinary/url-gen';
-// import { AdvancedImage } from '@cloudinary/react';
-// import { fill } from '@cloudinary/url-gen/actions/resize';
+import { useEffect } from 'react';
+import socket from './utils/socket';
 
 const httpLink = createHttpLink({
  uri: '/graphql', 
@@ -35,15 +34,24 @@ const client = new ApolloClient({
 
 function App() {
 
-  // const cld = new Cloudinary({
-  //   cloud: {
-  //      cloudName: import.meta.env.VITE_CLOUDINARY_NAME || 'default-cloud-name',
-  //     // cloudName: 'dxdq51xth',
-  //   },
-  // });
+  useEffect(() => {
+    // Connect the socket when the app is loaded
+    socket.connect();
 
-  // const myImage = cld.image('sample');
-  // myImage.resize(fill().width(250).height(250));
+    // Debugging: Log connection status
+    socket.on('connect', () => {
+      console.log(`Connected to Socket.io server with ID: ${socket.id}`);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from Socket.io server');
+    });
+
+    // Clean up the socket connection when the app is unmounted
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <ApolloProvider client={client}>
