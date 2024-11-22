@@ -132,7 +132,7 @@ const CanvasComponent: React.FC = () => {
 
     const handleNewFrame = async () => {
         // Save the current frame first
-        await saveCurrentFrameData();
+        saveCurrentFrameData();
 
         // Clear the canvas to make the new frame blank
         clearCanvas(); // Ensures the canvas is blank for the new frame
@@ -190,17 +190,6 @@ const CanvasComponent: React.FC = () => {
         };
     };
 
-
-    // const loadFrameData = (imageData: ImageData | null) => {
-    //     const canvas = canvasRef.current;
-    //     if (!canvas || !imageData) return;
-    //     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    //     if (!ctx) return;
-
-    //     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    //     ctx.putImageData(imageData, 0, 0);
-    // };
-
     //draws an initial grid onto the canvas.
     const drawGrid = (ctx: CanvasRenderingContext2D) => {
         for (let x = 0; x < canvasWidth; x += pixelSize) {
@@ -256,6 +245,7 @@ const CanvasComponent: React.FC = () => {
 
         ctx.strokeStyle = '#cccccc';
         ctx.strokeRect(pixelX, pixelY, pixelSize, pixelSize)
+
     };
 
     const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -398,6 +388,13 @@ const CanvasComponent: React.FC = () => {
         saveCurrentFrameData();
     }, []);
 
+    //set the eraser to off if the color code changes
+    useEffect(() => {
+        if(isClear){
+            setClear(false)
+        }
+    }, [colorCode])
+
     return (
         <div>
             {Auth.loggedIn() ? (
@@ -433,8 +430,8 @@ const CanvasComponent: React.FC = () => {
                         ></canvas>
                     </div>
 
-                    <div className="componentsContainer">
-                        <div>
+                    <div className="componentsContainer fixed left-3 top-20 p-4 px-4 py-2 bg-blue-400 text-white rounded shadow">
+                        <div className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
                             <label>
                                 Brush Size:{" "}
                                 <input
@@ -449,30 +446,30 @@ const CanvasComponent: React.FC = () => {
                             </label>
                         </div>
 
-                        <div className="hexColorPicker">
+                        <div className="hexColorPicker p-3">
                             <HexColorPicker color={colorCode} onChange={changeColor} />
                         </div>
 
-                        <div className="colorCodeContainer">
-                            <label className="hex">
+                        <div className="colorCodeContainer py-2">
+                            <label className="hex px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
                                 Hex Code:{" "}
                                 <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
                             </label>
                         </div>
 
-                        <div className="clear-erase">
-                            <button className="clear" onClick={clearCanvas}>
+                        <div className="clear-erase flex flex-col items-start">
+                            <button className="clear px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={clearCanvas}>
                                 Clear
                             </button>
-                            <button className="erase" onClick={() => setClear(true)}>
+                            <button className="erase px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={() => setClear(true)}>
                                 Eraser
                             </button>
-                            <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                            <button className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
                         </div>
 
                         <div>
-                            <button className="saveLoop" onClick={handleLoopSave}>
-                                Save Loop
+                        <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={handleLoopSave}>
+                        Save Loop
                             </button>
                         </div>
                     </div>
