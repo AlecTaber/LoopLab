@@ -1,6 +1,6 @@
 import bycrypt from 'bcryptjs';
 import User, { IUser } from '../models/User.js';
-import Loop from '../models/Loop.js';
+import Loop from '../models/loop.js';
 import { LikeArgs } from './likeResolvers.js';
 import { LoopArgs } from './loopResolvers.js';
 import { CommentArgs } from './commentResolvers.js';
@@ -17,7 +17,7 @@ interface UserArgs {
     email: string,
     loops: [LoopArgs],
     comments: [CommentArgs],
-    likes: [UserLikeArgs],
+    likes: UserLikeArgs,
     loopCount: number
 }
 
