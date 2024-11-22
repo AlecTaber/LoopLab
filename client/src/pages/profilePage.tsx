@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useQuery, useLazyQuery } from '@apollo/client';
-import { GET_LOOPS, GET_USER_BY_LOOP } from '../utils/queries';
+import { GET_LOOPS, GET_USER_BY_LOOP, QUERY_ME } from '../utils/queries';
 import { FaUser, FaHeart, FaCommentAlt, FaBackward, FaForward } from 'react-icons/fa';
 import socket from '../utils/socket';
 
@@ -9,19 +9,19 @@ const ProfilePage: React.FC = () => {
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
     const [currentPage, setCurrentPage] = useState(1);
     const [usernames, setUsernames] = useState<{ [key: string]: string }>({}); // Store usernames by loop ID
-    const { data, loading, error } = useQuery(GET_LOOPS, {
+    const { data: loopsData, loading: loopsLoading, error: loopsError } = useQuery(GET_LOOPS, {
         variables: { page: currentPage, limit: 10 },
-    });
+    }), { data: userData } = useQuery(QUERY_ME);
     const [fetchUserByLoop] = useLazyQuery(GET_USER_BY_LOOP);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // Update loops when query data changes
     useEffect(() => {
-        if (data?.getLoops) {
-            setLoops(data.getLoops);
+        if (loopsData?.getLoops) {
+            setLoops(loopsData.getLoops);
         }
-    }, [data]);
+    }, [loopsData]);
 
     // Fetch usernames for each loop
     useEffect(() => {
@@ -102,15 +102,17 @@ const ProfilePage: React.FC = () => {
         setCurrentPage((prev) => (direction === 'next' ? prev + 1 : Math.max(prev - 1, 1)));
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error fetching loops: {error.message}</div>;
+    if (loopsLoading) return <div>Loading...</div>;
+    if (loopsError) return <div>Error fetching loops: {loopsError.message}</div>;
+
+    console.log(userData);
 
     return (
         <div className="homepage-container min-h-screen bg-blue-100 p-6 flex gap-6">
             <div className="lg:fixed lg:w-1/7 lg:h-5/6 bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 p-6">
-                <h1 className="text-2xl font-bold mb-2">Insert Username</h1>
+                <h1 className="text-2xl font-bold mb-2">{userData?.me?.username || 'My Profile'}</h1>
                 <h2 className="text-sm mb-4">Change Username</h2>
-                <h2 className="text-lg mb-4">insert user email</h2>
+                <h2 className="text-lg mb-4">{userData?.me?.email || 'My Email'}</h2>
             </div>
             <div className="flex-1 overflow-hidden mx-auto p-6 lg:ml-[15%] space-y-8">
             {loops.map((loop: any) => (
