@@ -19,7 +19,9 @@ const commentSchema = new Schema<IComment>({
     loopId: { type: Schema.Types.ObjectId, ref: "Loop", required: true },
     likes: [likeSchema],
     likeCount: {type: Number, default: 0}
-});
+  }, 
+  { timestamps: true }
+);
 
 commentSchema.virtual("virtualLikeCount").get(function() {
   return this.likes.length

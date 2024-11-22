@@ -42,19 +42,18 @@ const commentResolvers = {
             }
         },
 
-        getCommentsByLoop: async (_: any, { _id}: LoopArgs) => {
+        getCommentsByLoop: async (_: any, { _id }: LoopArgs) => {
             try {
-                const loop = await Loop.findById(_id).populate("comments")
-                if(!loop){
+                const loop = await Loop.findById(_id).populate({
+                    path: 'comments',
+                    populate: { path: 'userId', select: 'username' }, // Populate userId with username
+                });
+        
+                if (!loop) {
                     throw new Error("Loop not found!");
                 }
-
-                const comments = await Comment.find({loopId: loop._id})
-                if(!comments){
-                    return []
-                }
-
-                return comments
+                console.log("Fetched comments:", loop.comments); // Log the comments
+                return loop.comments; // Ensure comments are returned with populated username
             } catch (error) {
                 console.error("Error getting comments from loop!", error);
                 throw new Error("Error getting comments by Loop");
@@ -64,46 +63,57 @@ const commentResolvers = {
 
     Mutation: {
         //add add like mutation
-        createComment: async (_: any, {input}: AddCommentArgs, context: any) => {
+        createComment: async (_: any, { input }: AddCommentArgs, context: any) => {
+            console.log('CreateComment Input:', input); // Log input
+            console.log('Context:', context.userId); // Log userId from context
 
+            const user = await User.findById(context.userId); // Fetch user from context
+        
+            if (!user) {
+                console.error('User not found!');
+                throw new AuthenticationError("User not authenticated or not found!");
+            }
+        
             const comment = new Comment({
                 body: input.body,
-                username: input.username,
+                username: user.username, // Use fetched username
                 userId: context.userId,
-                loopId: input.loopId
+                loopId: input.loopId,
             });
-
-            //update user
+        
             const updatedUser = await User.findByIdAndUpdate(
                 context.userId,
-                {$addToSet: {comments: comment.id}},
-                {new: true}
+                { $addToSet: { comments: comment.id } },
+                { new: true }
             );
-
-            if(!updatedUser){
-                throw new AuthenticationError("Could not find User!")
+        
+            if (!updatedUser) {
+                throw new AuthenticationError("Could not find User!");
             }
-
+        
             const updatedLoop = await Loop.findByIdAndUpdate(
                 input.loopId,
-                {$addToSet: {comments: comment.id}},
-                {new: true}
-            )
-
-            if(!updatedLoop){
-                throw new Error("No Loop with this ID exists!")
+                { $addToSet: { comments: comment.id } },
+                { new: true }
+            );
+        
+            if (!updatedLoop) {
+                throw new Error("No Loop with this ID exists!");
             }
-
+        
             await comment.save();
-
+        
             io.emit("newComment", {
                 _id: comment.id,
                 body: comment.body,
-                username: comment.username,
+                username: comment.username, // Send username
                 userId: comment.userId,
-                loopId: comment.loopId
+                loopId: comment.loopId,
             });
 
+            await comment.save();
+            console.log('Created Comment:', comment); // Log created comment
+        
             return comment;
         },
 
