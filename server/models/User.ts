@@ -2,10 +2,6 @@ import mongoose, {Document, Schema, Types} from "mongoose";
 import bcrypt from 'bcryptjs';
 import {ILike, likeSchema} from "./Like.js"
 
-export interface ILikeUser extends Document {
-  loop: [ILike];
-  comment: [ILike];
-}
 
 export interface IUser extends Document {
   id: string;
@@ -14,15 +10,11 @@ export interface IUser extends Document {
   password: string;
   loops: Types.ObjectId[];
   comments: Types.ObjectId[];
-  likes: [ILikeUser]
+  likesLoops: [ILike];
+  likesComments: [ILike];
   isCorrectPassword(password: string): Promise<Boolean>;
   loopCount: number;
 }
-
-const likeUserSchema = new Schema<ILikeUser>({
-  loop: [likeSchema],
-  comment: [likeSchema]
-})
 
 const userSchema = new Schema<IUser>({
   username: { type: String, required: true, unique: true },
@@ -30,7 +22,8 @@ const userSchema = new Schema<IUser>({
   password: { type: String, required: true },
   loops: [{type: Schema.Types.ObjectId, ref: "Loop"}],
   comments: [{type: Schema.Types.ObjectId, ref: "Comment"}],
-  likes: [likeUserSchema]
+  likesLoops: [likeSchema],
+  likesComments: [likeSchema],
   },
   {
     toJSON: {

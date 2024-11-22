@@ -13,7 +13,8 @@ const userTypeDefs = gql`
     password: String!
     loops: [Loop]
     comments: [Comment]
-    likes: [LikeUser]
+    likesLoops: [Like]
+    likesComments: [Like]
   }
 
   type AuthPayload {

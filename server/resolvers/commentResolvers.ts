@@ -3,7 +3,7 @@ import { LikeArgs } from './likeResolvers.js';
 import { getUserDataFromToken } from '../utils/auth.js';
 
 import User from '../models/User.js';
-import Loop from '../models/Loop.js';
+import Loop from '../models/loop.js';
 import { LoopArgs } from './loopResolvers.js';
 import { AuthenticationError } from 'apollo-server-express';
 

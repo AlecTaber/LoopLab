@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import Loop from "../models/Loop.js";
+import Loop from "../models/loop.js";
 import Comment from "../models/Comment.js";
 
 import { CommentArgs } from "./commentResolvers.js";
@@ -46,12 +46,15 @@ const likeResolvers = {
                         { new: true }
                     );
                 
-                    await User.findByIdAndUpdate(
+                    const removeLikeUser = await User.findByIdAndUpdate(
                         userId, 
-                        { $pull: { likes: {loop: { userId: userId } } } },
+                        { $pull: { likesLoops: { userId: userId } } },
                         { new: true }
                     );
                     console.log("Like removed from loop");
+
+                    console.log("Removed Like On User:", removeLikeUser)
+
                 } else {
                     // Add the like
                     await Loop.findByIdAndUpdate(
@@ -62,7 +65,7 @@ const likeResolvers = {
               
                     await User.findByIdAndUpdate(
                       userId,
-                      { $push: { likes: {loop: { userId, loopId: _id } } } },
+                      { $push: { likesLoops: { userId, loopId: _id } } },
                       { new: true }
                     );
                     console.log("Like added to loop");
@@ -82,48 +85,68 @@ const likeResolvers = {
         },
         addLikeToComment: async (_:any, {_id}: CommentArgs, context: any) => {
             try {
-
                 if (!context.userId) {
-                    throw new Error("Not authenticated");
+                    throw new AuthenticationError("User not authenticated!");
                 }
-
+              
                 const userId = context.userId;
-
-                // Check if the comment exists
+              
+                // Fetch the loop and user
                 const comment = await Comment.findById(_id);
                 if (!comment) {
-                    throw new Error("Comment not found");
+                throw new Error("No Comment with that id!");
                 }
+              
+                const user = await User.findById(userId);
+              
+                if (!user) {
+                throw new Error("User not found!");
+                }
+              
+                // Check if the user already liked the comment
+                const hasLiked = comment.likes.some((comment) => comment.userId.toString() === userId);
+              
+                if (hasLiked) {
+                    // Remove the like (toggle behavior)
+                    await Comment.findByIdAndUpdate(
+                        _id,
+                        { $pull: { likes: { userId: userId } } },
+                        { new: true }
+                    );
+                
+                    const removeLikeUser = await User.findByIdAndUpdate(
+                        userId, 
+                        { $pull: { likesComments: { userId: userId } } },
+                        { new: true }
+                    );
+                    console.log("Like removed from Comment");
 
-                // Check if the user already liked this comment
-                const user = await User.findOne({
-                    _id: userId,
-                    "likes.comments": { $elemMatch: { _id } },
-                });
-
-                if (user) {
-                    // If the like already exists, remove it (toggle behavior)
-                    await User.findByIdAndUpdate(userId, {
-                        $pull: { "likes.comments": { _id } },
-                    });
-                    console.log("Like removed from comment");
+                    console.log("Removed Like On User:", removeLikeUser)
+                    
                 } else {
-                    // Otherwise, add the like
-                    await User.findByIdAndUpdate(userId, {
-                        $push: { "likes.comments": { _id } },
-                    });
-                    console.log("Like added to comment");
+                    // Add the like
+                    await Comment.findByIdAndUpdate(
+                      _id,
+                      { $push: { likes: { userId, commentId: _id } } },
+                      { new: true }
+                    );
+              
+                    await User.findByIdAndUpdate(
+                      userId,
+                      { $push: { likesComments: { userId, commentId: _id } } },
+                      { new: true }
+                    );
+                    console.log("Like added to Comment");
                 }
-
-                // Optionally, update the comment model to store the count
+              
                 await Comment.findByIdAndUpdate(_id, {
-                    $inc: { likesCount: user ? -1 : 1 },
+                  $inc: { likeCount: hasLiked ? -1 : 1 },
                 });
-
+              
                 return comment;
 
             } catch (err: any){
-                console.error("Error adding like to Comment!", err)
+                console.error("Error adding like to loop!", err)
                 throw new Error("Error adding like.")
             }
         }
