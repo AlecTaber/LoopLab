@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_LOOPS } from '../utils/queries';
+import { useQuery, useLazyQuery } from '@apollo/client';
+import { GET_LOOPS, GET_USER_BY_LOOP } from '../utils/queries';
 import { FaUser, FaHeart, FaCommentAlt, FaBackward, FaForward } from 'react-icons/fa';
 import socket from '../utils/socket';
 
@@ -8,9 +8,11 @@ const HomePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
     const [currentPage, setCurrentPage] = useState(1);
+    const [usernames, setUsernames] = useState<{ [key: string]: string }>({}); // Store usernames by loop ID
     const { data, loading, error } = useQuery(GET_LOOPS, {
         variables: { page: currentPage, limit: 10 },
     });
+    const [fetchUserByLoop] = useLazyQuery(GET_USER_BY_LOOP);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -20,6 +22,34 @@ const HomePage: React.FC = () => {
             setLoops(data.getLoops);
         }
     }, [data]);
+
+    // Fetch usernames for each loop
+    useEffect(() => {
+        const fetchUsernames = async () => {
+            const usernamePromises = loops.map(async (loop: any) => {
+                try {
+                    const { data } = await fetchUserByLoop({ variables: { _id: loop._id } });
+                    return { loopId: loop._id, username: data?.getUserByLoop?.username || 'Unknown' };
+                } catch (error) {
+                    console.error(`Error fetching username for loop ${loop._id}:`, error);
+                    return { loopId: loop._id, username: 'Error' };
+                }
+            });
+
+            const resolvedUsernames = await Promise.all(usernamePromises);
+
+            const usernameMap = resolvedUsernames.reduce((acc, { loopId, username }) => {
+                acc[loopId] = username;
+                return acc;
+            }, {} as { [key: string]: string });
+
+            setUsernames(usernameMap);
+        };
+
+        if (loops.length > 0) {
+            fetchUsernames();
+        }
+    }, [loops, fetchUserByLoop]);
 
     // Initialize frame indices
     useEffect(() => {
@@ -33,15 +63,15 @@ const HomePage: React.FC = () => {
     }, [loops]);
 
     useEffect(() => {
-      // Listen for newLoop events and update the state
-      socket.on("newLoop", (newLoop) => {
-        console.log("New loop received:", newLoop);
-        setLoops((prevLoops) => [newLoop, ...prevLoops]); // Add the new loop to the top
-      });
-  
-      return () => {
-        socket.off("newLoop");
-      };
+        // Listen for newLoop events and update the state
+        socket.on("newLoop", (newLoop) => {
+            console.log("New loop received:", newLoop);
+            setLoops((prevLoops) => [newLoop, ...prevLoops]); // Add the new loop to the top
+        });
+
+        return () => {
+            socket.off("newLoop");
+        };
     }, []);
 
     // Frame animation logic
@@ -99,9 +129,18 @@ const HomePage: React.FC = () => {
                         <div className="w-full lg:w-2/3 flex flex-col">
                             <div className="w-full h-full p-6 flex flex-col">
                                 <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
-                                    <button className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200">
-                                        <FaUser />
-                                    </button>
+                                    {/* Username and Profile Button */}
+                                    <div className="flex items-center space-x-2">
+                                        <h2 className="text-2xl font-bold">{usernames[loop._id] || 'Loading...'}</h2>
+                                        <button
+                                            className="px-3 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
+                                            onClick={() => console.log(`Visit profile for ${usernames[loop._id]}`)}
+                                        >
+                                            <FaUser />
+                                        </button>
+                                    </div>
+
+                                    {/* Other Buttons */}
                                     <div className="flex space-x-2">
                                         <button className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200">
                                             <FaHeart />
