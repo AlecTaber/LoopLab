@@ -1,4 +1,4 @@
-import Loop from "../models/Loop.js";
+import Loop from "../models/loop.js";
 import User from "../models/User.js";
 import { LikeArgs } from "./likeResolvers.js";
 import { AuthenticationError } from "apollo-server-express";
