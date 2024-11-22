@@ -30,28 +30,34 @@ const HomePage: React.FC = () => {
     };
 
     const handleCommentSubmit = async (commentBody: string) => {
+        if (!selectedLoopId) {
+            console.error("No loop selected");
+            return;
+        }
+    
         try {
-            // Send comment data to backend
             await createComment({
                 variables: {
                     input: {
                         body: commentBody,
-                        username: "Username", //will replace this with actual username
                         loopId: selectedLoopId,
                     },
                 },
             });
-
-            // Fetch updated comments for the loop
+    
             const { data: updatedComments } = await fetchCommentsByLoop({
-                variables: { _id: selectedLoopId },
+                variables: { _id: selectedLoopId }, // Ensure selectedLoopId is valid
             });
-
-            // Update local state with new comments
+    
+            console.log("Updated comments response:", updatedComments);
+            if (!updatedComments?.getCommentsByLoop) {
+                throw new Error("Failed to fetch updated comments");
+            }
+    
             setLoops((prevLoops) =>
                 prevLoops.map((loop) =>
                     loop._id === selectedLoopId
-                        ? { ...loop, comments: updatedComments.getCommentsByLoop }
+                        ? { ...loop, comments: updatedComments?.getCommentsByLoop || [] }
                         : loop
                 )
             );

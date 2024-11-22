@@ -76,8 +76,8 @@ query GetUserByLoop($_id: ID!) {
 `;
 
 export const GET_COMMENTS_BY_LOOP = gql`
-    query GetCommentsByLoop($_id: ID!) {
-        getCommentsByLoop(_id: $_id) {
+    query GetCommentsByLoop($id: ID!) {
+        getCommentsByLoop(_id: $id) {
             _id
             body
             username

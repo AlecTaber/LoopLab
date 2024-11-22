@@ -17,7 +17,6 @@ const commentTypeDefs = gql`
 
   input CreateCommentInput {
     body: String!
-    username: String!
     loopId: ID!
   }
 
