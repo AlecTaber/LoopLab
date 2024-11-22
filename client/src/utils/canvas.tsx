@@ -433,8 +433,8 @@ const CanvasComponent: React.FC = () => {
                         ></canvas>
                     </div>
 
-                    <div className="componentsContainer">
-                        <div>
+                    <div className="componentsContainer fixed left-3 top-20 p-4 px-4 py-2 bg-blue-400 text-white rounded shadow">
+                        <div className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
                             <label>
                                 Brush Size:{" "}
                                 <input
@@ -449,30 +449,30 @@ const CanvasComponent: React.FC = () => {
                             </label>
                         </div>
 
-                        <div className="hexColorPicker">
+                        <div className="hexColorPicker p-3">
                             <HexColorPicker color={colorCode} onChange={changeColor} />
                         </div>
 
-                        <div className="colorCodeContainer">
-                            <label className="hex">
+                        <div className="colorCodeContainer py-2">
+                            <label className="hex px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
                                 Hex Code:{" "}
                                 <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
                             </label>
                         </div>
 
-                        <div className="clear-erase">
-                            <button className="clear" onClick={clearCanvas}>
+                        <div className="clear-erase flex flex-col items-start">
+                            <button className="clear px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={clearCanvas}>
                                 Clear
                             </button>
-                            <button className="erase" onClick={() => setClear(true)}>
+                            <button className="erase px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={() => setClear(true)}>
                                 Eraser
                             </button>
-                            <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                            <button className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
                         </div>
 
                         <div>
-                            <button className="saveLoop" onClick={handleLoopSave}>
-                                Save Loop
+                        <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={handleLoopSave}>
+                        Save Loop
                             </button>
                         </div>
                     </div>
