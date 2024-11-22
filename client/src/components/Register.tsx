@@ -67,7 +67,7 @@ const Register: React.FC = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex items-center justify-center min-h-screen bg-indigo-100">
             <div className="bg-white p-8 rounded shadow-md w-96">
                 <h2 className="text-2xl font-bold text-center mb-4">Register</h2>
 
@@ -110,7 +110,7 @@ const Register: React.FC = () => {
 
                     <button
                         type="submit"
-                        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                         Register
                     </button>
@@ -125,7 +125,7 @@ const Register: React.FC = () => {
                     Already have an account?{' '}
                     <button
                         onClick={() => navigate('/login')}
-                        className="text-indigo-600 hover:underline"
+                        className="text-indigo-500 hover:underline"
                     >
                         Login here
                     </button>

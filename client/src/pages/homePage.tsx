@@ -3,6 +3,7 @@ import { useQuery, useLazyQuery } from '@apollo/client';
 import { GET_LOOPS, GET_USER_BY_LOOP } from '../utils/queries';
 import { FaUser, FaHeart, FaCommentAlt, FaBackward, FaForward } from 'react-icons/fa';
 import socket from '../utils/socket';
+import CommentModal from '../components/CommentModal';
 
 const HomePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
@@ -13,8 +14,27 @@ const HomePage: React.FC = () => {
         variables: { page: currentPage, limit: 10 },
     });
     const [fetchUserByLoop] = useLazyQuery(GET_USER_BY_LOOP);
-
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Modal state
+    const [isModalOpen, setModalOpen] = useState(false);
+    const [selectedLoopId, setSelectedLoopId] = useState<string | null>(null);
+
+    const openModal = (loopId: string) => {
+        setSelectedLoopId(loopId);
+        setModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setSelectedLoopId(null);
+        setModalOpen(false);
+    };
+
+    const handleCommentSubmit = (commentBody: string) => {
+        console.log(`Comment for loop ${selectedLoopId}:`, commentBody);
+        // Implement your logic for submitting the comment, e.g., send to server
+        closeModal();
+    };
 
     // Update loops when query data changes
     useEffect(() => {
@@ -106,17 +126,16 @@ const HomePage: React.FC = () => {
     if (error) return <div>Error fetching loops: {error.message}</div>;
 
     return (
-        <div className="min-h-screen bg-indigo-100 p-6 space-y-8">
+  <div className="min-h-screen bg-indigo-100 p-6 space-y-8">
+            {/* Loops Section */}
             {loops.map((loop: any) => (
                 <div
                     key={loop._id}
                     className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 mx-auto p-6"
-                    style={{
-                        maxWidth: '90%',
-                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                    }}
+                    style={{ maxWidth: '90%' }}
                 >
                     <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Frame Preview */}
                         <div className="w-full lg:w-1/3 flex justify-center items-center">
                             <div className="aspect-square w-full max-w-lg p-6 flex items-center justify-center">
                                 <img
@@ -126,10 +145,10 @@ const HomePage: React.FC = () => {
                                 />
                             </div>
                         </div>
+                        {/* Loop Details */}
                         <div className="w-full lg:w-2/3 flex flex-col">
                             <div className="w-full h-full p-6 flex flex-col">
                                 <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
-                                    {/* Username and Profile Button */}
                                     <div className="flex items-center space-x-2">
                                         <h2 className="text-2xl font-bold">{usernames[loop._id] || 'Loading...'}</h2>
                                         <button
@@ -139,18 +158,19 @@ const HomePage: React.FC = () => {
                                             <FaUser />
                                         </button>
                                     </div>
-
-                                    {/* Other Buttons */}
                                     <div className="flex space-x-2">
                                         <button className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200">
                                             <FaHeart />
                                         </button>
-                                        <button className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200">
+                                        <button
+                                            className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
+                                            onClick={() => openModal(loop._id)}
+                                        >
                                             <FaCommentAlt />
                                         </button>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-b-lg flex-1 mt-4 shadow-md">
+                                <div className="bg-gray-100 p-4 rounded-b-lg flex-1 mt-4 shadow-md">
                                     <h3 className="text-sm font-bold mb-2">Comments</h3>
                                     {Array(3)
                                         .fill('This is a sample comment')
@@ -165,6 +185,7 @@ const HomePage: React.FC = () => {
                     </div>
                 </div>
             ))}
+            {/* Pagination */}
             <footer className="flex justify-between">
                 <button
                     className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
@@ -180,6 +201,12 @@ const HomePage: React.FC = () => {
                     <FaForward />
                 </button>
             </footer>
+            {/* Comment Modal */}
+            <CommentModal
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                onSubmit={handleCommentSubmit}
+            />
         </div>
     );
 };
