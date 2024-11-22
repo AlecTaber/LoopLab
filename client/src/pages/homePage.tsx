@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useQuery, useLazyQuery } from '@apollo/client';
-import { GET_LOOPS, GET_USER_BY_LOOP } from '../utils/queries';
+import { useQuery, useLazyQuery, useMutation } from '@apollo/client';
+import { GET_LOOPS, GET_USER_BY_LOOP, GET_COMMENTS_BY_LOOP } from '../utils/queries';
+import { CREATE_COMMENT } from '../utils/mutations';
 import { FaUser, FaHeart, FaCommentAlt, FaBackward, FaForward } from 'react-icons/fa';
 import socket from '../utils/socket';
 import CommentModal from '../components/CommentModal';
@@ -10,15 +11,13 @@ const HomePage: React.FC = () => {
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
     const [currentPage, setCurrentPage] = useState(1);
     const [usernames, setUsernames] = useState<{ [key: string]: string }>({}); // Store usernames by loop ID
-    const { data, loading, error } = useQuery(GET_LOOPS, {
-        variables: { page: currentPage, limit: 10 },
-    });
+    const { data, loading, error } = useQuery(GET_LOOPS);
     const [fetchUserByLoop] = useLazyQuery(GET_USER_BY_LOOP);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-    // Modal state
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedLoopId, setSelectedLoopId] = useState<string | null>(null);
+    const [createComment] = useMutation(CREATE_COMMENT);
+    const [fetchCommentsByLoop] = useLazyQuery(GET_COMMENTS_BY_LOOP);
 
     const openModal = (loopId: string) => {
         setSelectedLoopId(loopId);
@@ -30,10 +29,37 @@ const HomePage: React.FC = () => {
         setModalOpen(false);
     };
 
-    const handleCommentSubmit = (commentBody: string) => {
-        console.log(`Comment for loop ${selectedLoopId}:`, commentBody);
-        // Implement your logic for submitting the comment, e.g., send to server
-        closeModal();
+    const handleCommentSubmit = async (commentBody: string) => {
+        try {
+            // Send comment data to backend
+            await createComment({
+                variables: {
+                    input: {
+                        body: commentBody,
+                        username: "Username", //will replace this with actual username
+                        loopId: selectedLoopId,
+                    },
+                },
+            });
+
+            // Fetch updated comments for the loop
+            const { data: updatedComments } = await fetchCommentsByLoop({
+                variables: { _id: selectedLoopId },
+            });
+
+            // Update local state with new comments
+            setLoops((prevLoops) =>
+                prevLoops.map((loop) =>
+                    loop._id === selectedLoopId
+                        ? { ...loop, comments: updatedComments.getCommentsByLoop }
+                        : loop
+                )
+            );
+        } catch (error) {
+            console.error('Error creating comment:', error);
+        } finally {
+            closeModal();
+        }
     };
 
     // Update loops when query data changes
@@ -126,7 +152,7 @@ const HomePage: React.FC = () => {
     if (error) return <div>Error fetching loops: {error.message}</div>;
 
     return (
-  <div className="min-h-screen bg-indigo-100 p-6 space-y-8">
+        <div className="min-h-screen bg-indigo-100 p-6 space-y-8">
             {/* Loops Section */}
             {loops.map((loop: any) => (
                 <div
@@ -170,15 +196,17 @@ const HomePage: React.FC = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="bg-gray-100 p-4 rounded-b-lg flex-1 mt-4 shadow-md">
+                                <div className="bg-gray-50 p-4 rounded-b-lg flex-1 mt-4 shadow-md">
                                     <h3 className="text-sm font-bold mb-2">Comments</h3>
-                                    {Array(3)
-                                        .fill('This is a sample comment')
-                                        .map((comment, index) => (
-                                            <p key={`comment-${index}`} className="text-sm text-gray-700 mb-1">
-                                                {comment}
+                                    {loop.comments && loop.comments.length > 0 ? (
+                                        loop.comments.map((comment: any) => (
+                                            <p key={comment._id} className="text-sm text-gray-700 mb-1">
+                                                <strong>{comment.username}:</strong> {comment.body}
                                             </p>
-                                        ))}
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-gray-500">No comments yet. Be the first to comment!</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
