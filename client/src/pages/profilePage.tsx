@@ -9,9 +9,11 @@ const ProfilePage: React.FC = () => {
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
     const [currentPage, setCurrentPage] = useState(1);
     const [usernames, setUsernames] = useState<{ [key: string]: string }>({}); // Store usernames by loop ID
+    const { data: userData } = useQuery(QUERY_ME);
     const { data: loopsData, loading: loopsLoading, error: loopsError } = useQuery(GET_LOOPS, {
-        variables: { page: currentPage, limit: 10 },
-    }), { data: userData } = useQuery(QUERY_ME);
+        skip: !userData,
+        variables: { page: currentPage, limit: 10, userId: userData?.me?._id },
+    });
     const [fetchUserByLoop] = useLazyQuery(GET_USER_BY_LOOP);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -19,9 +21,10 @@ const ProfilePage: React.FC = () => {
     // Update loops when query data changes
     useEffect(() => {
         if (loopsData?.getLoops) {
-            setLoops(loopsData.getLoops);
+            const filteredLoops = loopsData.getLoops.filter((loop: any) => loop.userId === userData?.me?._id);
+            setLoops(filteredLoops);
         }
-    }, [loopsData]);
+    }, [loopsData, userData]);
 
     // Fetch usernames for each loop
     useEffect(() => {
@@ -102,7 +105,7 @@ const ProfilePage: React.FC = () => {
         setCurrentPage((prev) => (direction === 'next' ? prev + 1 : Math.max(prev - 1, 1)));
     };
 
-    if (loopsLoading) return <div>Loading...</div>;
+    if (loopsLoading || !userData) return <div>Loading...</div>;
     if (loopsError) return <div>Error fetching loops: {loopsError.message}</div>;
 
     console.log(userData);
