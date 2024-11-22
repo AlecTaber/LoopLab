@@ -61,3 +61,11 @@ export const GET_LOOPS = gql`
     }
   }
 `;
+
+export const GET_USER_BY_LOOP = gql`
+query GetUserByLoop($_id: ID!) {
+    getUserByLoop(_id: $_id) {
+        username
+    }
+}
+`;
