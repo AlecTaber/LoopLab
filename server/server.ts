@@ -47,6 +47,12 @@ io.on("connection", (socket) => {
     io.emit("newLoop", newLoop); // Broadcast to all clients
   });
 
+  // Listen to new Comments in the resolvers
+  socket.on("newComment", (newComment) => {
+    console.log("New Comment recieved on server:", newComment);
+    io.emit("newComment", newComment);
+  })
+
   socket.on("disconnect", () => {
     console.log(`User disconnected: ${socket.id}`);
   });

@@ -132,7 +132,7 @@ const CanvasComponent: React.FC = () => {
 
     const handleNewFrame = async () => {
         // Save the current frame first
-        await saveCurrentFrameData();
+        saveCurrentFrameData();
 
         // Clear the canvas to make the new frame blank
         clearCanvas(); // Ensures the canvas is blank for the new frame
@@ -190,17 +190,6 @@ const CanvasComponent: React.FC = () => {
         };
     };
 
-
-    // const loadFrameData = (imageData: ImageData | null) => {
-    //     const canvas = canvasRef.current;
-    //     if (!canvas || !imageData) return;
-    //     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    //     if (!ctx) return;
-
-    //     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    //     ctx.putImageData(imageData, 0, 0);
-    // };
-
     //draws an initial grid onto the canvas.
     const drawGrid = (ctx: CanvasRenderingContext2D) => {
         for (let x = 0; x < canvasWidth; x += pixelSize) {
@@ -256,6 +245,7 @@ const CanvasComponent: React.FC = () => {
 
         ctx.strokeStyle = '#cccccc';
         ctx.strokeRect(pixelX, pixelY, pixelSize, pixelSize)
+
     };
 
     const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -397,6 +387,13 @@ const CanvasComponent: React.FC = () => {
         drawGrid(ctx);
         saveCurrentFrameData();
     }, []);
+
+    //set the eraser to off if the color code changes
+    useEffect(() => {
+        if(isClear){
+            setClear(false)
+        }
+    }, [colorCode])
 
     return (
         <div>
