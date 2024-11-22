@@ -62,6 +62,7 @@ const Login: React.FC = () => {
             setEmail('');
             setPassword('');
 
+            // Store the token
             localStorage.setItem('token', result.data.login.token);
             navigate('/home');
         }

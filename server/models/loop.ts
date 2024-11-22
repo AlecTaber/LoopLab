@@ -15,6 +15,8 @@ export interface ILoop extends Document {
     comments: Types.ObjectId[];
     likes: [ILike];
     likeCount: number
+    createdAt?: Date;
+    updatedAt?: Date; 
 }
 
 const frameSchema = new Schema<IFrame>({
@@ -28,12 +30,13 @@ export const loopSchema = new Schema<ILoop>({
     frames: [frameSchema],
     comments: [{type: Schema.Types.ObjectId, ref: "Comment"}],
     likes: [likeSchema],
+    likeCount: {type: Number, default: 0}
   },
     { timestamps: true }
 );
 
 
-loopSchema.virtual("likeCount").get(function() {
+loopSchema.virtual("virtualLikeCount").get(function() {
     return this.likes.length
 });
 

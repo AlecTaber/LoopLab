@@ -4,6 +4,7 @@ import { HexColorPicker } from "react-colorful";
 import { SAVE_LOOP } from "./mutations";
 import Auth from "./auth.js";
 import "../pages/canvasPage.css";
+import socket from "./socket";
 
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
@@ -80,10 +81,14 @@ const CanvasComponent: React.FC = () => {
             const title = `My Loop - ${new Date().toLocaleString()}`;
             console.log('Payload for save loop mutation:', { title, frames: validFrames });
             const { data } = await saveLoop({
-                variables: {input: {title, frames: formattedFrames}},
+                variables: { input: { title, frames: formattedFrames } },
             });
 
             console.log('Loop saved successfully:', data.saveLoop);
+
+            // Emit the new loop event via Socket.io
+            socket.emit("newLoop", data.saveLoop);
+
         } catch (err) {
             console.error('Failed to save loop:', err);
             alert('Failed to save loop. Please try again.');
@@ -112,26 +117,26 @@ const CanvasComponent: React.FC = () => {
     const saveCurrentFrameData = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-      
-        canvas.toBlob((blob) => {
-          if (blob) {
-            setFrames((prevFrames) => {
-                const updatedFrames = [...prevFrames];
-                updatedFrames[activeFrameIndex].canvasImg = blob;
-                return updatedFrames;
-            });
-        }
-        }, 'image/png');
-      };
-      
 
-      const handleNewFrame = async () => {
+        canvas.toBlob((blob) => {
+            if (blob) {
+                setFrames((prevFrames) => {
+                    const updatedFrames = [...prevFrames];
+                    updatedFrames[activeFrameIndex].canvasImg = blob;
+                    return updatedFrames;
+                });
+            }
+        }, 'image/png');
+    };
+
+
+    const handleNewFrame = async () => {
         // Save the current frame first
         await saveCurrentFrameData();
-    
+
         // Clear the canvas to make the new frame blank
         clearCanvas(); // Ensures the canvas is blank for the new frame
-    
+
         const newFrameId = uuidv4();
         const canvas = canvasRef.current;
         if (canvas) {
@@ -156,35 +161,35 @@ const CanvasComponent: React.FC = () => {
             }, 'image/png');
         }
     };
-    
+
 
     const switchFrame = (index: number) => {
         saveCurrentFrameData();
         setActiveFrameIndex(index);
-      
+
         const frame = frames[index];
         const canvas = canvasRef.current;
         if (!canvas || !frame || !frame.canvasImg) {
             clearCanvas();
             return;
         }
-      
+
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
-      
+
         const img = new Image();
         if (frame.canvasImg instanceof Blob) {
-          img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
+            img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
         } else {
-          img.src = frame.canvasImg; // Use Cloudinary URL
+            img.src = frame.canvasImg; // Use Cloudinary URL
         }
-      
+
         img.onload = () => {
-          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-          ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
         };
-      };
-      
+    };
+
 
     // const loadFrameData = (imageData: ImageData | null) => {
     //     const canvas = canvasRef.current;
@@ -314,70 +319,70 @@ const CanvasComponent: React.FC = () => {
 
     const playAnimation = () => {
         if (isPlaying) {
-          stopAnimation();
-          return;
+            stopAnimation();
+            return;
         }
-      
+
         setIsPlaying(true);
         let frameIndex = 0;
-      
-        animationIntervalRef.current = setInterval(() => {
-          if (frameIndex >= frames.length) frameIndex = 0;
-      
-          const frame = frames[frameIndex];
-          const canvas = canvasRef.current;
-          if (!canvas) return;
-      
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return;
-      
-          if (frame.canvasImg instanceof Blob) {
-            const img = new Image();
-            img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
-            img.onload = () => {
-              ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-              ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-            };
-          } else if (typeof frame.canvasImg === 'string') {
-            const img = new Image();
-            img.src = frame.canvasImg; // Use Cloudinary URL
-            img.onload = () => {
-              ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-              ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-            };
-          }
-      
-          frameIndex++;
-        }, animationSpeed);
-      };
-      
 
-      const stopAnimation = () => {
+        animationIntervalRef.current = setInterval(() => {
+            if (frameIndex >= frames.length) frameIndex = 0;
+
+            const frame = frames[frameIndex];
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            if (frame.canvasImg instanceof Blob) {
+                const img = new Image();
+                img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                    ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                };
+            } else if (typeof frame.canvasImg === 'string') {
+                const img = new Image();
+                img.src = frame.canvasImg; // Use Cloudinary URL
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                    ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                };
+            }
+
+            frameIndex++;
+        }, animationSpeed);
+    };
+
+
+    const stopAnimation = () => {
         setIsPlaying(false);
         if (animationIntervalRef.current) {
-          clearInterval(animationIntervalRef.current);
-          animationIntervalRef.current = null;
+            clearInterval(animationIntervalRef.current);
+            animationIntervalRef.current = null;
         }
-      
+
         const frame = frames[activeFrameIndex];
         const canvas = canvasRef.current;
         if (!canvas || !frame || !frame.canvasImg) return;
-      
+
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
-      
+
         const img = new Image();
         if (frame.canvasImg instanceof Blob) {
-          img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
+            img.src = URL.createObjectURL(frame.canvasImg); // Use Blob URL
         } else {
-          img.src = frame.canvasImg; // Use Cloudinary URL
+            img.src = frame.canvasImg; // Use Cloudinary URL
         }
-      
+
         img.onload = () => {
-          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-          ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
         };
-      };
+    };
 
 
     useEffect(() => {
@@ -387,7 +392,7 @@ const CanvasComponent: React.FC = () => {
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
-    
+
         //draw the grid
         drawGrid(ctx);
         saveCurrentFrameData();
@@ -397,91 +402,91 @@ const CanvasComponent: React.FC = () => {
         <div>
             {Auth.loggedIn() ? (
                 <div className="canvasComponentContainer">
-                <div className="framesContainer">
-                    {frames.map((frame, index) => (
-                        <button key={`${frame.id}-${index}`} onClick={() => switchFrame(index)} disabled={isPlaying}>
-                            {frame.canvasImg && (
-                                <img
-                                    src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg}
-                                    width="60"
-                                    height="60"
-                                    alt={`Frame ${index + 1} Thumbnail`}
-                                />
-                            )}
-                        </button>
-                    ))}
-                    <button onClick={handleNewFrame}>New Frame</button>
+                    <div className="framesContainer">
+                        {frames.map((frame, index) => (
+                            <button key={`${frame.id}-${index}`} onClick={() => switchFrame(index)} disabled={isPlaying}>
+                                {frame.canvasImg && (
+                                    <img
+                                        src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg}
+                                        width="60"
+                                        height="60"
+                                        alt={`Frame ${index + 1} Thumbnail`}
+                                    />
+                                )}
+                            </button>
+                        ))}
+                        <button onClick={handleNewFrame}>New Frame</button>
+                    </div>
+
+                    {/* Add a wrapper div to make the canvas responsive */}
+                    <div className="responsive-canvas">
+                        <canvas
+                            id="paintMain"
+                            ref={canvasRef}
+                            width={canvasWidth}
+                            height={canvasHeight}
+                            onMouseDown={handleMouseDown}
+                            onMouseMove={handleMouseMove}
+                            onMouseUp={handleMouseUpLeave}
+                            onMouseLeave={handleMouseUpLeave}
+                            style={{ border: "1px solid blue" }}
+                        ></canvas>
+                    </div>
+
+                    <div className="componentsContainer">
+                        <div>
+                            <label>
+                                Brush Size:{" "}
+                                <input
+                                    type="text"
+                                    name="brushSize"
+                                    value={brushSize || ""}
+                                    onChange={(e: any) => {
+                                        handleBrushSizeChange(e);
+                                    }}
+                                    className="brushSize"
+                                ></input>
+                            </label>
+                        </div>
+
+                        <div className="hexColorPicker">
+                            <HexColorPicker color={colorCode} onChange={changeColor} />
+                        </div>
+
+                        <div className="colorCodeContainer">
+                            <label className="hex">
+                                Hex Code:{" "}
+                                <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
+                            </label>
+                        </div>
+
+                        <div className="clear-erase">
+                            <button className="clear" onClick={clearCanvas}>
+                                Clear
+                            </button>
+                            <button className="erase" onClick={() => setClear(true)}>
+                                Eraser
+                            </button>
+                            <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                        </div>
+
+                        <div>
+                            <button className="saveLoop" onClick={handleLoopSave}>
+                                Save Loop
+                            </button>
+                        </div>
+                    </div>
                 </div>
-        
-                {/* Add a wrapper div to make the canvas responsive */}
-                <div className="responsive-canvas">
-                    <canvas
-                        id="paintMain"
-                        ref={canvasRef}
-                        width={canvasWidth}
-                        height={canvasHeight}
-                        onMouseDown={handleMouseDown}
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUpLeave}
-                        onMouseLeave={handleMouseUpLeave}
-                        style={{ border: "1px solid blue" }}
-                    ></canvas>
-                </div>
-        
-                <div className="componentsContainer">
-                    <div>
-                        <label>
-                            Brush Size:{" "}
-                            <input
-                                type="text"
-                                name="brushSize"
-                                value={brushSize || ""}
-                                onChange={(e: any) => {
-                                    handleBrushSizeChange(e);
-                                }}
-                                className="brushSize"
-                            ></input>
-                        </label>
-                    </div>
-        
-                    <div className="hexColorPicker">
-                        <HexColorPicker color={colorCode} onChange={changeColor} />
-                    </div>
-        
-                    <div className="colorCodeContainer">
-                        <label className="hex">
-                            Hex Code:{" "}
-                            <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
-                        </label>
-                    </div>
-        
-                    <div className="clear-erase">
-                        <button className="clear" onClick={clearCanvas}>
-                            Clear
-                        </button>
-                        <button className="erase" onClick={() => setClear(true)}>
-                            Eraser
-                        </button>
-                        <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
-                    </div>
-        
-                    <div>
-                        <button className="saveLoop" onClick={handleLoopSave}>
-                            Save Loop
-                        </button>
-                    </div>
-                </div>
-            </div>
             ) : (
                 <div>
                     <h3>User Not Signed in!</h3>
                 </div>
             )}
         </div>
-        
-        
+
+
     );
-    
+
 }
 
 export default CanvasComponent

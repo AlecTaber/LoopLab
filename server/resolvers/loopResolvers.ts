@@ -2,6 +2,7 @@ import Loop from "../models/Loop.js";
 import User from "../models/User.js";
 import { LikeArgs } from "./likeResolvers.js";
 import { AuthenticationError } from "apollo-server-express";
+import { io } from "../server.js";
 
 export interface LoopArgs {
     _id: any,
@@ -20,8 +21,8 @@ interface AddLoopArgs {
     input: {
         title: string
         frames: {
-                frameId: string,
-                canvasImg: string
+            frameId: string,
+            canvasImg: string
         }[];
     }
 }
@@ -29,19 +30,19 @@ interface AddLoopArgs {
 const LoopResolvers = {
     Query: {
         getLoops: async () => {
-            return Loop.find().sort({createdAt: -1});
+            return Loop.find().sort({ createdAt: -1 });
         },
-        getLoop: async (_parent: any, {_id}: LoopArgs) => {
+        getLoop: async (_parent: any, { _id }: LoopArgs) => {
             return Loop.findById(_id);
         },
-    }, 
+    },
 
     Mutation: {
         //add add like mutation
         saveLoop: async (_: any, { input }: AddLoopArgs, context: any) => {
             try {
 
-                if (!context.userId){
+                if (!context.userId) {
                     throw new AuthenticationError("You need to be logged in to use this feature!")
                 };
 
@@ -63,9 +64,18 @@ const LoopResolvers = {
 
                 await User.findByIdAndUpdate(
                     context.userId,
-                    {$addToSet: {loops: newLoop.id}},
-                    {new: true}
+                    { $addToSet: { loops: newLoop.id } },
+                    { new: true }
                 );
+
+                // Emit the newLoop event
+                io.emit('newLoop', {
+                    _id: newLoop.id,
+                    title: newLoop.title,
+                    frames: newLoop.frames,
+                    createdAt: newLoop.createdAt,
+                    userId: newLoop.userId,
+                });
 
                 return newLoop;
 
@@ -76,23 +86,26 @@ const LoopResolvers = {
             }
         },
 
-        deleteLoop: async(_parent: any, {_id}: LoopArgs, context: any) => {
-            if(context.userId){
+        deleteLoop: async (_parent: any, { _id }: LoopArgs, context: any) => {
+            if (context.userId) {
                 const deletedLoop = await Loop.findByIdAndDelete(_id);
 
-                if(!deletedLoop){
+                if (!deletedLoop) {
                     throw new Error("Could not find Loop!")
                 };
 
                 const updatedUser = await User.findByIdAndUpdate(
-                    {_id: context.userId},
-                    {$pull: {loops: {_id: _id}}},
-                    {new: true}
+                    { _id: context.userId },
+                    { $pull: { loops: { _id: _id } } },
+                    { new: true }
                 );
 
-                if(!updatedUser){
+                if (!updatedUser) {
                     throw new AuthenticationError('Could not find user!')
                 };
+
+                // Emit the deleteLoop event
+                io.emit('deleteLoop', { _id });
 
                 return deletedLoop;
             }
