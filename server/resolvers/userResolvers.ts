@@ -6,8 +6,10 @@ import { LoopArgs } from './loopResolvers.js';
 import { CommentArgs } from './commentResolvers.js';
 import { generateToken } from '../utils/jwt.js';
 
-
-
+export interface UserLikeArgs {
+    loop: [LikeArgs],
+    comment: [LikeArgs]
+}
 
 interface UserArgs {
     _id: any,
@@ -15,10 +17,7 @@ interface UserArgs {
     email: string,
     loops: [LoopArgs],
     comments: [CommentArgs],
-    likes: {
-        loops: [LikeArgs],
-        comments: [LikeArgs],
-    },
+    likes: [UserLikeArgs],
     loopCount: number
 }
 
