@@ -2,11 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_LOOPS_BY_USER, QUERY_ME } from '../utils/queries';
 import { FaBackward, FaForward } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const ProfilePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
     const [currentPage, setCurrentPage] = useState(1);
+    const navigate = useNavigate();
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const { data: userData } = useQuery(QUERY_ME);
@@ -15,10 +18,13 @@ const ProfilePage: React.FC = () => {
         variables: { userId: userData?.me?._id, page: currentPage, limit: 10 },
     });
 
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-    // Toggle the dropdown
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
+    };
+
+    const logout = () => {
+        localStorage.removeItem('authToken');
+        navigate('/login');
     };
 
     // Update loops when query data changes
@@ -89,7 +95,12 @@ const ProfilePage: React.FC = () => {
                         <div className="p-4 text-left space-y-2">
                             <h2 className="text-sm">Change Username</h2>
                             <h2 className="text-sm">Account Email: {userData?.me?.email || 'My Email'}</h2>
-                            <h2 className='text-sm'>logout</h2>
+                            <div
+                            className="text-sm cursor-pointer text-blue-600"
+                            onClick={logout} // Log the user out when clicked
+                        >
+                            Logout
+                        </div>
                         </div>
                     </div>
                 )}
