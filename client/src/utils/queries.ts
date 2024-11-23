@@ -54,6 +54,10 @@ query GetLoops {
         _id
         title
         createdAt
+        likeCount
+        likes {
+            userId
+        }
         frames {
             frameId
             canvasImg

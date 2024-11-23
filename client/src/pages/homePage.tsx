@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client';
-import { GET_LOOPS, GET_USER_BY_LOOP, GET_COMMENTS_BY_LOOP } from '../utils/queries';
-import { CREATE_COMMENT } from '../utils/mutations';
+import { GET_LOOPS, GET_USER_BY_LOOP, GET_COMMENTS_BY_LOOP, QUERY_ME } from '../utils/queries';
+import { CREATE_COMMENT, ADD_LIKE_TO_LOOP } from '../utils/mutations';
 import { FaUser, FaHeart, FaCommentAlt, FaBackward, FaForward } from 'react-icons/fa';
 import socket from '../utils/socket';
 import CommentModal from '../components/CommentModal';
@@ -9,6 +9,7 @@ import CommentModal from '../components/CommentModal';
 const HomePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
+    const [likedLoops, setLikedLoops] = useState<{ [key: string]: boolean }>({}); // Store liked loops by loop ID
     const [currentPage, setCurrentPage] = useState(1);
     const [usernames, setUsernames] = useState<{ [key: string]: string }>({}); // Store usernames by loop ID
     const { data, loading, error } = useQuery(GET_LOOPS);
@@ -17,7 +18,12 @@ const HomePage: React.FC = () => {
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedLoopId, setSelectedLoopId] = useState<string | null>(null);
     const [createComment] = useMutation(CREATE_COMMENT);
+    const [addLikeToLoop] = useMutation(ADD_LIKE_TO_LOOP);
     const [fetchCommentsByLoop] = useLazyQuery(GET_COMMENTS_BY_LOOP);
+    const { data: userData } = useQuery(QUERY_ME);
+    const currentUserId = userData?.me?._id;
+
+    console.log("Fetched current user ID:", currentUserId);
 
     const openModal = (loopId: string) => {
         setSelectedLoopId(loopId);
@@ -34,8 +40,9 @@ const HomePage: React.FC = () => {
             console.error("No loop selected");
             return;
         }
-    
+
         try {
+            console.log("Submitting comment for loop ID:", selectedLoopId);
             await createComment({
                 variables: {
                     input: {
@@ -44,16 +51,18 @@ const HomePage: React.FC = () => {
                     },
                 },
             });
-    
+
             const { data: updatedComments } = await fetchCommentsByLoop({
                 variables: { _id: selectedLoopId }, // Ensure selectedLoopId is valid
             });
-    
+
+            console.log("Fetched updated comments for loop ID:", selectedLoopId, updatedComments);
+
             console.log("Updated comments response:", updatedComments);
             if (!updatedComments?.getCommentsByLoop) {
                 throw new Error("Failed to fetch updated comments");
             }
-    
+
             setLoops((prevLoops) =>
                 prevLoops.map((loop) =>
                     loop._id === selectedLoopId
@@ -68,18 +77,57 @@ const HomePage: React.FC = () => {
         }
     };
 
+    const handleLike = async (loopId: string) => {
+        try {
+            console.log("Toggling like for loop ID:", loopId);
+
+            const { data } = await addLikeToLoop({ variables: { _id: loopId } });
+
+            console.log("Response from addLikeToLoop mutation:", data);
+
+            setLikedLoops((prev) => ({
+                ...prev,
+                [loopId]: !prev[loopId],
+            }));
+
+            setLoops((prevLoops) =>
+                prevLoops.map((loop) =>
+                    loop._id === loopId
+                        ? { ...loop, likeCount: data.addLikeToLoop.likeCount }
+                        : loop
+                )
+            );
+        } catch (error) {
+            console.error('Error toggling like:', error);
+        }
+    };
+
     // Update loops when query data changes
     useEffect(() => {
         if (data?.getLoops) {
+            console.log("Fetched loops from GET_LOOPS query:", data.getLoops);
+
+            if (currentUserId) {
+                const initialLikes = data.getLoops.reduce((acc: { [key: string]: boolean }, loop: any) => {
+                    const userLiked = loop.likes.some((like: any) => like.userId === currentUserId);
+                    console.log(`Loop ID: ${loop._id}, User Liked:`, userLiked);
+                    acc[loop._id] = userLiked;
+                    return acc;
+                }, {});
+                setLikedLoops(initialLikes);
+            }
+
             setLoops(data.getLoops);
         }
-    }, [data]);
+    }, [data, currentUserId]);
 
     // Fetch usernames for each loop
     useEffect(() => {
         const fetchUsernames = async () => {
             const usernamePromises = loops.map(async (loop: any) => {
                 try {
+                    console.log("Fetching username for loop ID:", loop._id);
+
                     const { data } = await fetchUserByLoop({ variables: { _id: loop._id } });
                     return { loopId: loop._id, username: data?.getUserByLoop?.username || 'Unknown' };
                 } catch (error) {
@@ -154,8 +202,14 @@ const HomePage: React.FC = () => {
         setCurrentPage((prev) => (direction === 'next' ? prev + 1 : Math.max(prev - 1, 1)));
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error fetching loops: {error.message}</div>;
+    if (loading) {
+        console.log("Loading loops...");
+        return <div>Loading...</div>;
+    }
+    if (error) {
+        console.error("Error fetching loops:", error);
+        return <div>Error fetching loops: {error.message}</div>;
+    }
 
     return (
         <div className="min-h-screen bg-indigo-100 p-6 space-y-8">
@@ -191,7 +245,14 @@ const HomePage: React.FC = () => {
                                         </button>
                                     </div>
                                     <div className="flex space-x-2">
-                                        <button className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200">
+                                    <span className="text-sm">{loop.likeCount}</span>
+                                        <button
+                                            className={`px-4 py-1 rounded-lg text-sm hover:bg-gray-200 ${likedLoops[loop._id]
+                                                    ? 'bg-white text-red-500'
+                                                    : 'bg-white text-indigo-500'
+                                                }`}
+                                            onClick={() => handleLike(loop._id)}
+                                        >
                                             <FaHeart />
                                         </button>
                                         <button

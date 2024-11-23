@@ -33,14 +33,19 @@ const LoopResolvers = {
             try {
                 const loops = await Loop.find({})
                     .populate("comments") // Populate comments
+                    .populate("likes") // Populate likes if it's a reference
                     .sort({ createdAt: -1 }); // Sort by creation date (newest first)
-
-                    console.log('Fetched loops:', loops.map(loop => ({
+        
+                console.log(
+                    'Fetched loops:',
+                    loops.map(loop => ({
                         id: loop._id,
                         title: loop.title,
+                        likeCount: loop.likeCount, // Log likeCount for debugging
                         createdAt: loop.createdAt,
-                    }))); // Log key fields for debugging
-                    
+                    }))
+                );
+        
                 return loops;
             } catch (error) {
                 console.error("Error fetching loops:", error);
