@@ -77,79 +77,78 @@ const ProfilePage: React.FC = () => {
     if (loopsError) return <div>Error fetching loops: {loopsError.message}</div>;
 
     return (
-        <div className="homepage-container min-h-screen bg-blue-100 p-6 flex gap-6">
-        <div className='relative'>
-            {/* Username dropdown */}
-            <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 p-3">
-                <div
-                    className="flex items-center justify-center cursor-pointer space-x-2"
-                    onClick={toggleDropdown}
-                >
-                    <h1 className="text-2xl font-bold">{userData?.me?.username || 'My Profile'}</h1>
-                    <span className="text-lg">&#9662;</span> {/* Dropdown arrow */}
-                </div>
-
-                {/* Dropdown menu */}
-                {dropdownOpen && (
-                    <div className="absolute bg-white shadow-md rounded-lg mt-2 border border-gray-300 z-20">
-                        <div className="p-4 text-left space-y-2">
-                            <h2 className="text-sm">Change Username</h2>
-                            <h2 className="text-sm">Account Email: {userData?.me?.email || 'My Email'}</h2>
-                            <div
-                            className="text-sm cursor-pointer text-blue-600"
-                            onClick={logout} // Log the user out when clicked
-                        >
-                            Logout
-                        </div>
-                        </div>
+        <div className="profile-page-container min-h-screen bg-blue-100 p-4 flex flex-col gap-6">
+            <div className='relative inline-flex'>
+                {/* Username dropdown */}
+                <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 p-3 items-center">
+                    <div
+                        className="flex cursor-pointer space-x-2"
+                        onClick={toggleDropdown}
+                    >
+                        <h1 className="text-2xl font-bold">{userData?.me?.username || 'My Profile'}</h1>
+                        <span className="text-lg">&#9662;</span> {/* Dropdown arrow */}
                     </div>
-                )}
+
+                    {/* Dropdown menu */}
+                    {dropdownOpen && (
+                        <div className="absolute bg-white shadow-md rounded-lg mt-2 border border-gray-300 z-20">
+                            <div className="p-4 text-left space-y-2">
+                                <h2 className="text-sm">Change Username</h2>
+                                <h2 className="text-sm">Account Email: {userData?.me?.email || 'My Email'}</h2>
+                                <div
+                                    className="text-sm cursor-pointer text-blue-600"
+                                    onClick={logout} // Log the user out when clicked
+                                >
+                                    Logout
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
 
             {/* display loops */}
             <div>
-            {loops.map((loop: any) => (
-                <div
-                    key={loop._id}
-                    className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 mx-auto p-6"
-                    style={{ maxWidth: '90%' }}
-                >
-                    <div className="flex flex-col lg:flex-row gap-6">
-                        {/* Frame Preview */}
-                        <div className="w-full lg:w-1/3 flex justify-center items-center">
-                            <div className="aspect-square w-full max-w-lg p-6 flex items-center justify-center">
-                            <img
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {loops
+                        .slice((currentPage - 1) * 12, currentPage * 12) // Show 12 loops per page
+                        .map((loop: any) => (
+                            <div
+                                key={loop._id}
+                                className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 lg:mx-20 "
+                            >
+                                {/* Frame Preview */}
+                                <div className="aspect-square flex justify-center items-center p-4">
+                                    <img
                                         src={loop.frames?.[frameIndices[loop._id] || 0]?.canvasImg || ''}
                                         alt={`Frame ${frameIndices[loop._id] || 0}`}
                                         className="object-cover w-full h-full rounded-lg shadow-lg border-indigo-900 border-2"
                                     />
-                            </div>
-                        </div>
+                                </div>
 
-                        {/* Loop Details */}
-                        <div className="w-full lg:w-2/3 flex flex-col">
-                            <div className="w-full h-full p-6 flex flex-col">
+                                {/* Loop Details */}
+                                <div className="p-4">
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        ))}
                 </div>
-            ))}
-            <footer className="flex justify-between">
-                <button
-                    className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
-                    disabled={currentPage === 1}
-                    onClick={() => handlePageChange('prev')}
-                >
-                    <FaBackward />
-                </button>
-                <button
-                    className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
-                    onClick={() => handlePageChange('next')}
-                >
-                    <FaForward />
-                </button>
-            </footer>
+
+                {/* Pagination */}
+                <footer className="flex justify-between">
+                    <button
+                        className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
+                        disabled={currentPage === 1}
+                        onClick={() => handlePageChange('prev')}
+                    >
+                        <FaBackward />
+                    </button>
+                    <button
+                        className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
+                        onClick={() => handlePageChange('next')}
+                    >
+                        <FaForward />
+                    </button>
+                </footer>
             </div>
         </div>
     );
