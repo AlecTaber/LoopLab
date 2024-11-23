@@ -129,21 +129,21 @@ const ProfilePage: React.FC = () => {
 
                                 {/* Loop Details */}
                                 <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
-    {/* Comments */}
-    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
-        <FaCommentAlt size={24} />
-    </button>
+                                    {/* Comments */}
+                                    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+                                        <FaCommentAlt size={24} />
+                                    </button>
 
-    {/* Likes */}
-    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
-        <FaHeart size={24} />
-    </button>
+                                    {/* Likes */}
+                                    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+                                        <FaHeart size={24} />
+                                    </button>
 
-    {/* Trash */}
-    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
-        <FaTrashAlt size={24} />
-    </button>
-</div>
+                                    {/* Trash */}
+                                    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+                                        <FaTrashAlt size={24} />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                 </div>
