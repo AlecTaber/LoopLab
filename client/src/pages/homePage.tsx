@@ -245,15 +245,15 @@ const HomePage: React.FC = () => {
                                         </button>
                                     </div>
                                     <div className="flex space-x-2">
+                                    <span className="text-sm">{loop.likeCount}</span>
                                         <button
-                                            className={`px-4 py-1 rounded-lg text-sm ${likedLoops[loop._id]
-                                                    ? 'bg-red-500 text-white'
+                                            className={`px-4 py-1 rounded-lg text-sm hover:bg-gray-200 ${likedLoops[loop._id]
+                                                    ? 'bg-white text-red-500'
                                                     : 'bg-white text-indigo-500'
                                                 }`}
                                             onClick={() => handleLike(loop._id)}
                                         >
                                             <FaHeart />
-                                            {loop.likeCount}
                                         </button>
                                         <button
                                             className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
