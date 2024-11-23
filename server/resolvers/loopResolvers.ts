@@ -35,7 +35,7 @@ const LoopResolvers = {
                     .populate("comments") // Populate comments
                     .populate("likes") // Populate likes if it's a reference
                     .sort({ createdAt: -1 }); // Sort by creation date (newest first)
-        
+
                 console.log(
                     'Fetched loops:',
                     loops.map(loop => ({
@@ -45,7 +45,7 @@ const LoopResolvers = {
                         createdAt: loop.createdAt,
                     }))
                 );
-        
+
                 return loops;
             } catch (error) {
                 console.error("Error fetching loops:", error);
@@ -55,6 +55,19 @@ const LoopResolvers = {
         getLoop: async (_parent: any, { _id }: LoopArgs) => {
             return Loop.findById(_id);
         },
+
+        getLoopsByUser: async (_parent: any, { userId }: LoopArgs) => {
+            try {
+                const loops = await Loop.find({ userId })
+                    .populate("comments")
+                    .populate("likes")
+                    .sort({ createdAt: -1 });
+                return loops;
+            } catch (error) {
+                console.error("Error fetching loops by user:", error);
+                throw new Error("Failed to fetch loops by user");
+            }
+        }
     },
 
     Mutation: {
