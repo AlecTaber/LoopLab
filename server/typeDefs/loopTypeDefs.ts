@@ -42,6 +42,7 @@ const loopTypeDefs = gql`
     type Query {
         getLoops: [Loop!]!
         getLoop(_id: ID!): Loop
+        getLoopsByUser(userId: ID!, page: Int!, limit: Int!): [Loop!]!
     }
 
     type Mutation {

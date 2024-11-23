@@ -25,7 +25,7 @@ const router = createBrowserRouter([
         element: <CanvasPage/>
       },
       {
-        path: 'login',
+        path: '/login',
         element: <Login />
       },
       {
