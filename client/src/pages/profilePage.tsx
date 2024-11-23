@@ -3,6 +3,7 @@ import { useQuery } from '@apollo/client';
 import { GET_LOOPS_BY_USER, QUERY_ME } from '../utils/queries';
 import { FaBackward, FaForward } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { FaCommentAlt, FaHeart, FaTrashAlt, FaChevronDown, FaUser } from 'react-icons/fa';
 
 const ProfilePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
@@ -127,8 +128,22 @@ const ProfilePage: React.FC = () => {
                                 </div>
 
                                 {/* Loop Details */}
-                                <div className="p-4">
-                                </div>
+                                <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
+    {/* Comments */}
+    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+        <FaCommentAlt size={24} />
+    </button>
+
+    {/* Likes */}
+    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+        <FaHeart size={24} />
+    </button>
+
+    {/* Trash */}
+    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+        <FaTrashAlt size={24} />
+    </button>
+</div>
                             </div>
                         ))}
                 </div>
