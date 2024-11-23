@@ -44,6 +44,7 @@ const CanvasComponent: React.FC = () => {
 
     const handleLoopSave = async () => {
         try {
+            await saveCurrentFrameData();
             const updatedFrames = await Promise.all(
                 frames.map(async (frame) => {
                     if (!frame.canvasImg || !(frame.canvasImg instanceof Blob)) {
@@ -114,19 +115,25 @@ const CanvasComponent: React.FC = () => {
     };
 
     //add a new frame to the frames array
-    const saveCurrentFrameData = () => {
+    const saveCurrentFrameData = async(): Promise<void> => {
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas){
+            console.log("No Canvas Error!")
+            return;
+        };
 
-        canvas.toBlob((blob) => {
-            if (blob) {
-                setFrames((prevFrames) => {
-                    const updatedFrames = [...prevFrames];
-                    updatedFrames[activeFrameIndex].canvasImg = blob;
-                    return updatedFrames;
-                });
-            }
-        }, 'image/png');
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    setFrames((prevFrames) => {
+                        const updatedFrames = [...prevFrames];
+                        updatedFrames[activeFrameIndex].canvasImg = blob;
+                        return updatedFrames;
+                    });
+                }
+                resolve();
+            }, 'image/png');
+        });
     };
 
 
@@ -163,8 +170,9 @@ const CanvasComponent: React.FC = () => {
     };
 
 
-    const switchFrame = (index: number) => {
-        saveCurrentFrameData();
+    const switchFrame = async (index: number) => {
+        await saveCurrentFrameData();
+        if (index === activeFrameIndex) return;
         setActiveFrameIndex(index);
 
         const frame = frames[index];
@@ -401,7 +409,7 @@ const CanvasComponent: React.FC = () => {
                 <div className="canvasComponentContainer">
                     <div className="framesContainer">
                         {frames.map((frame, index) => (
-                            <button key={`${frame.id}-${index}`} onClick={() => switchFrame(index)} disabled={isPlaying}>
+                            <button key={`${frame.id}-${index}`} className="frames" onClick={async () => await switchFrame(index)} disabled={isPlaying}>
                                 {frame.canvasImg && (
                                     <img
                                         src={frame.canvasImg instanceof Blob ? URL.createObjectURL(frame.canvasImg) : frame.canvasImg}
