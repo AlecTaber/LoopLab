@@ -21,24 +21,23 @@ const likeResolvers = {
                 if (!context.userId) {
                     throw new AuthenticationError("User not authenticated!");
                 }
-
+        
                 const userId = context.userId;
-
+        
                 // Fetch the loop and user
                 const loop = await Loop.findById(_id);
                 if (!loop) {
                     throw new Error("No loop with that id!");
                 }
-
+        
                 const user = await User.findById(userId);
-
                 if (!user) {
                     throw new Error("User not found!");
                 }
-
+        
                 // Check if the user already liked the loop
                 const hasLiked = loop.likes.some((like) => like.userId.toString() === userId);
-
+        
                 if (hasLiked) {
                     // Remove the like (toggle behavior)
                     await Loop.findByIdAndUpdate(
@@ -46,16 +45,13 @@ const likeResolvers = {
                         { $pull: { likes: { userId: userId } } },
                         { new: true }
                     );
-
-                    const removeLikeUser = await User.findByIdAndUpdate(
+        
+                    await User.findByIdAndUpdate(
                         userId,
                         { $pull: { likesLoops: { userId: userId } } },
                         { new: true }
                     );
                     console.log("Like removed from loop");
-
-                    console.log("Removed Like On User:", removeLikeUser)
-
                 } else {
                     // Add the like
                     await Loop.findByIdAndUpdate(
@@ -63,7 +59,7 @@ const likeResolvers = {
                         { $push: { likes: { userId, loopId: _id } } },
                         { new: true }
                     );
-
+        
                     await User.findByIdAndUpdate(
                         userId,
                         { $push: { likesLoops: { userId, loopId: _id } } },
@@ -71,26 +67,32 @@ const likeResolvers = {
                     );
                     console.log("Like added to loop");
                 }
-
-                // Optionally update the loop's like count
-                await Loop.findByIdAndUpdate(_id, {
-                    $inc: { likeCount: hasLiked ? -1 : 1 },
-                });
-
-                const updatedLoop = await Loop.findById(_id); // Fetch the updated loop with the correct likeCount
+        
+                // Update the loop's like count and retrieve the updated document
+                const updatedLoop = await Loop.findByIdAndUpdate(
+                    _id,
+                    { $inc: { likeCount: hasLiked ? -1 : 1 } },
+                    { new: true }
+                );
+        
+                if (!updatedLoop) {
+                    throw new Error("Failed to update loop like count!");
+                }
+        
+                // Emit the like update event
                 io.emit('likeUpdate', {
-                    loopId: _id,
-                    userId: context.userId,
-                    likeCount: updatedLoop?.likeCount ?? 0, // Use the updated likeCount directly from the document
+                    loopId: updatedLoop._id,
+                    likeCount: updatedLoop.likeCount,
                 });
-
-                return loop;
-
+        
+                return updatedLoop;
+        
             } catch (err: any) {
-                console.error("Error adding like to loop!", err)
-                throw new Error("Error adding like.")
+                console.error("Error adding like to loop!", err);
+                throw new Error("Error adding like.");
             }
         },
+        
         addLikeToComment: async (_: any, { _id }: CommentArgs, context: any) => {
             try {
                 if (!context.userId) {

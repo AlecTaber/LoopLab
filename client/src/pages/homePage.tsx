@@ -79,44 +79,39 @@ const HomePage: React.FC = () => {
     const handleLike = async (loopId: string) => {
         try {
             console.log("Toggling like for loop ID:", loopId);
-
-            const { data } = await addLikeToLoop({ variables: { _id: loopId } });
-
-            console.log("Response from addLikeToLoop mutation:", data);
-
+    
+            // Optimistically toggle like status
             setLikedLoops((prev) => ({
                 ...prev,
                 [loopId]: !prev[loopId],
             }));
-
-            setLoops((prevLoops) =>
-                prevLoops.map((loop) =>
-                    loop._id === loopId
-                        ? { ...loop, likeCount: data.addLikeToLoop.likeCount }
-                        : loop
-                )
-            );
+    
+            // Send mutation to update likes in the backend
+            await addLikeToLoop({ variables: { _id: loopId } });
         } catch (error) {
-            console.error('Error toggling like:', error);
+            console.error("Error toggling like:", error);
+    
+            // Revert optimistic update if mutation fails
+            setLikedLoops((prev) => ({
+                ...prev,
+                [loopId]: !prev[loopId],
+            }));
         }
     };
 
     // Update loops when query data changes
     useEffect(() => {
         if (data?.getLoops) {
-            console.log("Fetched loops from GET_LOOPS query:", data.getLoops);
+            setLoops(data.getLoops);
 
             if (currentUserId) {
                 const initialLikes = data.getLoops.reduce((acc: { [key: string]: boolean }, loop: any) => {
                     const userLiked = loop.likes.some((like: any) => like.userId === currentUserId);
-                    console.log(`Loop ID: ${loop._id}, User Liked:`, userLiked);
                     acc[loop._id] = userLiked;
                     return acc;
                 }, {});
                 setLikedLoops(initialLikes);
             }
-
-            setLoops(data.getLoops);
         }
     }, [data, currentUserId]);
 
@@ -161,14 +156,12 @@ const HomePage: React.FC = () => {
         }
     }, [loops]);
 
-     // Socket.IO integration
+     // Socket.IO listeners for real-time updates
      useEffect(() => {
-        // Listen for newLoop events
         socket.on("newLoop", (newLoop) => {
-            setLoops((prevLoops) => [newLoop, ...prevLoops]); // Add the new loop to the top
+            setLoops((prevLoops) => [newLoop, ...prevLoops]);
         });
 
-        // Listen for newComment events
         socket.on("newComment", (newComment) => {
             setLoops((prevLoops) =>
                 prevLoops.map((loop) =>
@@ -179,14 +172,21 @@ const HomePage: React.FC = () => {
             );
         });
 
-        // Listen for likeUpdate events
         socket.on("likeUpdate", (likeUpdate) => {
             const { loopId, likeCount } = likeUpdate;
+
             setLoops((prevLoops) =>
                 prevLoops.map((loop) =>
                     loop._id === loopId ? { ...loop, likeCount } : loop
                 )
             );
+
+            if (currentUserId) {
+                setLikedLoops((prev) => ({
+                    ...prev,
+                    [loopId]: !prev[loopId],
+                }));
+            }
         });
 
         return () => {
@@ -194,7 +194,7 @@ const HomePage: React.FC = () => {
             socket.off("newComment");
             socket.off("likeUpdate");
         };
-    }, []);
+    }, [currentUserId]);
 
     // Frame animation logic
     useEffect(() => {
@@ -263,11 +263,11 @@ const HomePage: React.FC = () => {
                                         </button>
                                     </div>
                                     <div className="flex space-x-2">
-                                    <span className="text-sm">{loop.likeCount}</span>
+                                        <span className="text-sm">{loop.likeCount}</span>
                                         <button
                                             className={`px-4 py-1 rounded-lg text-sm hover:bg-gray-200 ${likedLoops[loop._id]
-                                                    ? 'bg-white text-red-500'
-                                                    : 'bg-white text-indigo-500'
+                                                ? 'bg-white text-red-500'
+                                                : 'bg-white text-indigo-500'
                                                 }`}
                                             onClick={() => handleLike(loop._id)}
                                         >
