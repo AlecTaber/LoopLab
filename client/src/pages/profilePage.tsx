@@ -1,14 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_LOOPS_BY_USER, QUERY_ME } from '../utils/queries';
-import { FaBackward, FaForward } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { FaCommentAlt, FaHeart, FaTrashAlt, FaChevronDown, FaUser } from 'react-icons/fa';
+import { FaCommentAlt, FaHeart, FaTrashAlt, FaChevronDown } from 'react-icons/fa';
 
 const ProfilePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
-    const [currentPage, setCurrentPage] = useState(1);
     const navigate = useNavigate();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -16,7 +14,7 @@ const ProfilePage: React.FC = () => {
     const { data: userData } = useQuery(QUERY_ME);
     const { data: loopsData, loading: loopsLoading, error: loopsError } = useQuery(GET_LOOPS_BY_USER, {
         skip: !userData,
-        variables: { userId: userData?.me?._id, page: currentPage, limit: 10 },
+        variables: { userId: userData?.me?._id },
     });
 
     const toggleDropdown = () => {
@@ -70,10 +68,6 @@ const ProfilePage: React.FC = () => {
         };
     }, [loops]);
 
-    const handlePageChange = (direction: 'next' | 'prev') => {
-        setCurrentPage((prev) => (direction === 'next' ? prev + 1 : Math.max(prev - 1, 1)));
-    };
-
     if (loopsLoading || !userData) return <div>Loading...</div>;
     if (loopsError) return <div>Error fetching loops: {loopsError.message}</div>;
 
@@ -111,9 +105,7 @@ const ProfilePage: React.FC = () => {
             {/* display loops */}
             <div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {loops
-                        .slice((currentPage - 1) * 12, currentPage * 12) // Show 12 loops per page
-                        .map((loop: any) => (
+                    {loops.map((loop: any) => (
                             <div
                                 key={loop._id}
                                 className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 lg:mx-20 "
@@ -147,23 +139,6 @@ const ProfilePage: React.FC = () => {
                             </div>
                         ))}
                 </div>
-
-                {/* Pagination */}
-                <footer className="flex justify-between">
-                    <button
-                        className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
-                        disabled={currentPage === 1}
-                        onClick={() => handlePageChange('prev')}
-                    >
-                        <FaBackward />
-                    </button>
-                    <button
-                        className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
-                        onClick={() => handlePageChange('next')}
-                    >
-                        <FaForward />
-                    </button>
-                </footer>
             </div>
         </div>
     );
