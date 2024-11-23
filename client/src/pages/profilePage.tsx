@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_LOOPS_BY_USER, QUERY_ME } from '../utils/queries';
-import { FaUser, FaHeart, FaCommentAlt, FaBackward, FaForward } from 'react-icons/fa';
+import { FaBackward, FaForward } from 'react-icons/fa';
 
 const ProfilePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
@@ -14,6 +14,12 @@ const ProfilePage: React.FC = () => {
         skip: !userData,
         variables: { userId: userData?.me?._id, page: currentPage, limit: 10 },
     });
+
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    // Toggle the dropdown
+    const toggleDropdown = () => {
+        setDropdownOpen(!dropdownOpen);
+    };
 
     // Update loops when query data changes
     useEffect(() => {
@@ -66,12 +72,29 @@ const ProfilePage: React.FC = () => {
 
     return (
         <div className="homepage-container min-h-screen bg-blue-100 p-6 flex gap-6">
-            {/* user profile info */}
-            <div className="lg:fixed lg:w-1/7 lg:h-5/6 bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 p-6">
-                <h1 className="text-2xl font-bold mb-2">{userData?.me?.username || 'My Profile'}</h1>
-                <h2 className="text-sm mb-4">Change Username</h2>
-                <h2 className="text-lg mb-4">{userData?.me?.email || 'My Email'}</h2>
+        <div className='relative'>
+            {/* Username dropdown */}
+            <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 p-3">
+                <div
+                    className="flex items-center justify-center cursor-pointer space-x-2"
+                    onClick={toggleDropdown}
+                >
+                    <h1 className="text-2xl font-bold">{userData?.me?.username || 'My Profile'}</h1>
+                    <span className="text-lg">&#9662;</span> {/* Dropdown arrow */}
+                </div>
+
+                {/* Dropdown menu */}
+                {dropdownOpen && (
+                    <div className="absolute bg-white shadow-md rounded-lg mt-2 border border-gray-300 z-20">
+                        <div className="p-4 text-left space-y-2">
+                            <h2 className="text-sm">Change Username</h2>
+                            <h2 className="text-sm">Account Email: {userData?.me?.email || 'My Email'}</h2>
+                            <h2 className='text-sm'>logout</h2>
+                        </div>
+                    </div>
+                )}
             </div>
+        </div>
 
             {/* display loops */}
             <div>
