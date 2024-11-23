@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client';
 import { GET_LOOPS, GET_USER_BY_LOOP, GET_COMMENTS_BY_LOOP, QUERY_ME } from '../utils/queries';
 import { CREATE_COMMENT, ADD_LIKE_TO_LOOP } from '../utils/mutations';
-import { FaUser, FaHeart, FaCommentAlt, FaBackward, FaForward } from 'react-icons/fa';
+import { FaUser, FaHeart, FaCommentAlt } from 'react-icons/fa';
 import socket from '../utils/socket';
 import CommentModal from '../components/CommentModal';
 
@@ -10,7 +10,6 @@ const HomePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
     const [likedLoops, setLikedLoops] = useState<{ [key: string]: boolean }>({}); // Store liked loops by loop ID
-    const [currentPage, setCurrentPage] = useState(1);
     const [usernames, setUsernames] = useState<{ [key: string]: string }>({}); // Store usernames by loop ID
     const { data, loading, error } = useQuery(GET_LOOPS);
     const [fetchUserByLoop] = useLazyQuery(GET_USER_BY_LOOP);
@@ -162,15 +161,38 @@ const HomePage: React.FC = () => {
         }
     }, [loops]);
 
-    useEffect(() => {
-        // Listen for newLoop events and update the state
+     // Socket.IO integration
+     useEffect(() => {
+        // Listen for newLoop events
         socket.on("newLoop", (newLoop) => {
-            console.log("New loop received:", newLoop);
             setLoops((prevLoops) => [newLoop, ...prevLoops]); // Add the new loop to the top
+        });
+
+        // Listen for newComment events
+        socket.on("newComment", (newComment) => {
+            setLoops((prevLoops) =>
+                prevLoops.map((loop) =>
+                    loop._id === newComment.loopId
+                        ? { ...loop, comments: [...(loop.comments || []), newComment] }
+                        : loop
+                )
+            );
+        });
+
+        // Listen for likeUpdate events
+        socket.on("likeUpdate", (likeUpdate) => {
+            const { loopId, likeCount } = likeUpdate;
+            setLoops((prevLoops) =>
+                prevLoops.map((loop) =>
+                    loop._id === loopId ? { ...loop, likeCount } : loop
+                )
+            );
         });
 
         return () => {
             socket.off("newLoop");
+            socket.off("newComment");
+            socket.off("likeUpdate");
         };
     }, []);
 
@@ -197,10 +219,6 @@ const HomePage: React.FC = () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
     }, [loops]);
-
-    const handlePageChange = (direction: 'next' | 'prev') => {
-        setCurrentPage((prev) => (direction === 'next' ? prev + 1 : Math.max(prev - 1, 1)));
-    };
 
     if (loading) {
         console.log("Loading loops...");
@@ -280,22 +298,6 @@ const HomePage: React.FC = () => {
                     </div>
                 </div>
             ))}
-            {/* Pagination */}
-            <footer className="flex justify-between">
-                <button
-                    className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
-                    disabled={currentPage === 1}
-                    onClick={() => handlePageChange('prev')}
-                >
-                    <FaBackward />
-                </button>
-                <button
-                    className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
-                    onClick={() => handlePageChange('next')}
-                >
-                    <FaForward />
-                </button>
-            </footer>
             {/* Comment Modal */}
             <CommentModal
                 isOpen={isModalOpen}
