@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
+import { FaRegPlusSquare, FaRegMinusSquare } from "react-icons/fa";
 import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
 import { SAVE_LOOP } from "./mutations";
@@ -141,33 +142,64 @@ const CanvasComponent: React.FC = () => {
         // Save the current frame first
         saveCurrentFrameData();
 
-        // Clear the canvas to make the new frame blank
-        clearCanvas(); // Ensures the canvas is blank for the new frame
+        if(frames.length < 22){
+            // Clear the canvas to make the new frame blank
+            clearCanvas(); // Ensures the canvas is blank for the new frame
 
-        const newFrameId = uuidv4();
-        const canvas = canvasRef.current;
-        if (canvas) {
-            canvas.toBlob(async (blob) => {
-                let canvasImg: string | null = null;
-                if (blob) {
-                    try {
-                        // Upload blank canvas to Cloudinary
-                        canvasImg = await uploadToCloudinary(blob);
-                        console.log(`Uploaded blank canvas for frame ${newFrameId}:`, canvasImg);
-                    } catch (error) {
-                        console.error('Failed to upload blank canvas:', error);
+            const newFrameId = uuidv4();
+            const canvas = canvasRef.current;
+            if (canvas) {
+                canvas.toBlob(async (blob) => {
+                    let canvasImg: string | null = null;
+                    if (blob) {
+                        try {
+                            // Upload blank canvas to Cloudinary
+                            canvasImg = await uploadToCloudinary(blob);
+                            console.log(`Uploaded blank canvas for frame ${newFrameId}:`, canvasImg);
+                        } catch (error) {
+                            console.error('Failed to upload blank canvas:', error);
+                        }
                     }
-                }
-                // Add new blank frame to frames state
-                setFrames((prevFrames) => [
-                    ...prevFrames,
-                    { id: newFrameId, canvasImg },
-                ]);
-                // Set the new frame as active
-                setActiveFrameIndex(frames.length); // Correctly set index
-            }, 'image/png');
+                    // Add new blank frame to frames state
+                    setFrames((prevFrames) => [
+                        ...prevFrames,
+                        { id: newFrameId, canvasImg },
+                    ]);
+                    // Set the new frame as active
+                    setActiveFrameIndex(frames.length); // Correctly set index
+                }, 'image/png');
+
+                console.log(frames);
+            }
+        } else {
+            alert("Cannot have more than 22 frames!")
         }
     };
+
+    // const handleRemoveFrame = async () => {
+    //     console.log("ActiveFrameIndex Before: ", activeFrameIndex)
+
+    //     if(frames.length > 1){
+    //         // Save the current frame data before removing
+    //         await saveCurrentFrameData();
+
+    //         // Remove the frame at the current activeFrameIndex
+    //         setFrames((prevFrames) => {
+    //             const updatedFrames = prevFrames.filter((_, index) => index !== activeFrameIndex - 1 );
+
+    //             // Ensure the activeFrameIndex is valid after the frame is removed
+    //             const newIndex = Math.max((activeFrameIndex - 1), 0); // Adjust to the previous frame or 0
+    //             setActiveFrameIndex(newIndex);
+
+    //             // Switch to the new active frame
+    //             switchFrame(newIndex);
+
+    //             return updatedFrames;
+    //         });
+    //     } else {
+    //         alert("Cannot have less than 1 frames!")
+    //     }
+    // };
 
 
     const switchFrame = async (index: number) => {
@@ -407,7 +439,7 @@ const CanvasComponent: React.FC = () => {
         <div>
             {Auth.loggedIn() ? (
                 <div className="canvasComponentContainer">
-                    <div className="framesContainer">
+                    <div className="framesContainer fixed top-20 p-4 py-2">
                         {frames.map((frame, index) => (
                             <button key={`${frame.id}-${index}`} className="frames" onClick={async () => await switchFrame(index)} disabled={isPlaying}>
                                 {frame.canvasImg && (
@@ -420,7 +452,8 @@ const CanvasComponent: React.FC = () => {
                                 )}
                             </button>
                         ))}
-                        <button onClick={handleNewFrame}>New Frame</button>
+                        <button onClick={handleNewFrame}><div className="newframe text-6xl text-red-500"><FaRegPlusSquare /></div></button>
+                        {/* <button onClick={handleRemoveFrame}><div className="newframe text-6xl text-red-500"><FaRegMinusSquare /></div></button> */}
                     </div>
 
                     {/* Add a wrapper div to make the canvas responsive */}
@@ -469,16 +502,23 @@ const CanvasComponent: React.FC = () => {
                             <button className="clear px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={clearCanvas}>
                                 Clear
                             </button>
-                            <button className="erase px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={() => setClear(true)}>
+                            <button className="erase px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" 
+                                onClick={() => {
+                                    if(!isClear){
+                                        setClear(true);
+                                    } else {
+                                        setClear(false);
+                                    }
+                                }}>
                                 Eraser
                             </button>
                             <button className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
                         </div>
 
                         <div>
-                        <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={handleLoopSave}>
-                        Save Loop
-                            </button>
+                            <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={handleLoopSave}>
+                            Save Loop
+                                </button>
                         </div>
                     </div>
                 </div>
