@@ -49,17 +49,26 @@ export const QUERY_ME = gql`
 // `;
 
 export const GET_LOOPS = gql`
-  query GetLoops {
+query GetLoops {
     getLoops {
-      _id
-      userId
-      title
-      frames {
-        frameId
-        canvasImg
-      }
+        _id
+        title
+        createdAt
+        likeCount
+        likes {
+            userId
+        }
+        frames {
+            frameId
+            canvasImg
+        }
+        comments {
+            _id
+            username
+            body
+        }
     }
-  }
+}
 `;
 
 export const GET_USER_BY_LOOP = gql`
@@ -68,4 +77,14 @@ query GetUserByLoop($_id: ID!) {
         username
     }
 }
+`;
+
+export const GET_COMMENTS_BY_LOOP = gql`
+    query GetCommentsByLoop($id: ID!) {
+        getCommentsByLoop(_id: $id) {
+            _id
+            body
+            username
+        }
+    }
 `;

@@ -30,7 +30,27 @@ interface AddLoopArgs {
 const LoopResolvers = {
     Query: {
         getLoops: async () => {
-            return Loop.find().sort({ createdAt: -1 });
+            try {
+                const loops = await Loop.find({})
+                    .populate("comments") // Populate comments
+                    .populate("likes") // Populate likes if it's a reference
+                    .sort({ createdAt: -1 }); // Sort by creation date (newest first)
+        
+                console.log(
+                    'Fetched loops:',
+                    loops.map(loop => ({
+                        id: loop._id,
+                        title: loop.title,
+                        likeCount: loop.likeCount, // Log likeCount for debugging
+                        createdAt: loop.createdAt,
+                    }))
+                );
+        
+                return loops;
+            } catch (error) {
+                console.error("Error fetching loops:", error);
+                throw new Error("Failed to fetch loops");
+            }
         },
         getLoop: async (_parent: any, { _id }: LoopArgs) => {
             return Loop.findById(_id);

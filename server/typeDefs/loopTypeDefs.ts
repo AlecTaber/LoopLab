@@ -9,11 +9,24 @@ const loopTypeDefs = gql`
         frames: [Frame!]!
         comments: [Comment]
         likes: [Like]
+        likeCount: Int
+        createdAt: String!
+        updatedAt: String!
     }
 
     type Frame {
         frameId: String!
         canvasImg: String
+    }
+
+    type Comment {
+    _id: ID
+    username: String
+    body: String
+    userId: ID
+    loopId: ID
+    likeCount: Int
+    likes: [Like]
     }
 
     input FrameInput {

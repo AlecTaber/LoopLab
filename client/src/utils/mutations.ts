@@ -39,3 +39,26 @@ mutation Mutation($input: LoopInput!) {
   }
 }
 `;
+
+export const CREATE_COMMENT = gql`
+    mutation CreateComment($input: CreateCommentInput!) {
+        createComment(input: $input) {
+            _id
+            body
+            username
+            loopId
+        }
+    }
+`;
+
+export const ADD_LIKE_TO_LOOP = gql`
+  mutation AddLikeToLoop($_id: ID!) {
+    addLikeToLoop(_id: $_id) {
+      _id
+      likeCount
+      likes {
+        userId
+      }
+    }
+  }
+`;
