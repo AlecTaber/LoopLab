@@ -36,6 +36,20 @@ export const QUERY_ME = gql`
     }
 `;
 
+export const GET_USER_BY_ID = gql`
+query getUserById($id: ID!) {
+    getUserById(_id: $id) {
+        _id
+        username
+        email
+        loops {
+            _id
+            title
+        }
+    }
+}
+`;
+
 // export const QUERY_LOOPS = gql`
 //  query loop(id: $id) {
 //     id

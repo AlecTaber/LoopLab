@@ -24,7 +24,7 @@ const userTypeDefs = gql`
 
   type Query {
     me: User
-    getUserbyId(_id: ID!): User!
+    getUserById(_id: ID!): User!
     getUserByLoop(_id: ID!): User!
   }
 

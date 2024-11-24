@@ -39,11 +39,10 @@ const ProfilePage: React.FC = () => {
         }
     
         try {
-            // Use Apollo Client to call the mutation with correct arguments
             const { data } = await updateUsername({
                 variables: { 
-                    userId: userData?.me?._id,  // userId should come from local storage or context
-                    username: newUsername // pass the 'newUsername' as 'username'
+                    userId: userData?.me?._id,
+                    username: newUsername 
                 }
             });
     

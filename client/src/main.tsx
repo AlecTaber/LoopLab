@@ -6,6 +6,7 @@ import App from './App.tsx'
 import HomePage from './pages/homePage.tsx'
 import CanvasPage from './pages/canvasPage.tsx'
 import ProfilePage from './pages/profilePage.tsx'
+import UserPage from './pages/userPage.tsx'
 import Error from './pages/errorPage.tsx'
 import Login from './components/Login.tsx'
 import Register from './components/Register.tsx'
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: '/profile',
         element: <ProfilePage/>
+      },
+      {
+        path: '/user',
+        element: <UserPage/>
       }
     ]
   }
