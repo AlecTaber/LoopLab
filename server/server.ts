@@ -53,6 +53,12 @@ io.on("connection", (socket) => {
     io.emit("newComment", newComment);
   })
 
+  // Listen to new Likes in the resolvers
+  socket.on("newLike", (newLike) => {
+    console.log("New Like recieved on server:", newLike);
+    io.emit("newLike", newLike);
+  })
+
   socket.on("disconnect", () => {
     console.log(`User disconnected: ${socket.id}`);
   });
