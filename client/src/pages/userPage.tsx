@@ -5,18 +5,18 @@ import { GET_LOOPS_BY_USER, GET_USER_BY_ID } from "../utils/queries";
 import { FaCommentAlt, FaHeart } from "react-icons/fa";
 
 const UserPage: React.FC = () => {
+    const { id: userId } = useParams();
     const [loops, setLoops] = useState<any[]>([]);
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const userId = "67400f5afa3e64f97d20a43b";  // Hardcoded for now
     const { data: userData, loading: userLoading, error: userError } = useQuery(GET_USER_BY_ID, {
         variables: { id: userId }
     });
     const { data: loopsData, loading: loopsLoading, error: loopsError } = useQuery(GET_LOOPS_BY_USER, {
         skip: !userData,
-        variables: { userId: userData?.getUserById._id },
+        variables: { userId },
     });
 
     useEffect(() => {
