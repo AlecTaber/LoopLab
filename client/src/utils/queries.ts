@@ -72,8 +72,8 @@ query GetLoops {
 `;
 
 export const GET_LOOPS_BY_USER = gql`
-  query GetLoopsByUser($userId: ID!, $page: Int!, $limit: Int!) {
-    getLoopsByUser(userId: $userId, page: $page, limit: $limit) {
+  query GetLoopsByUser($userId: ID!) {
+    getLoopsByUser(userId: $userId) {
       _id
       frames {
         canvasImg

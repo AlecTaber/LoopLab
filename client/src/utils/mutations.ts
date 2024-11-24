@@ -27,6 +27,15 @@ export const ADD_USER = gql`
     }
 `;
 
+export const UPDATE_USERNAME = gql`
+    mutation UpdateUsername($userId: ID!, $username: String!) {
+        updateUsername(userId: $userId, username: $username) {
+            _id
+            username
+        }
+    }
+`;
+
 export const SAVE_LOOP = gql`
 mutation Mutation($input: LoopInput!) {
   saveLoop(input: $input) {

@@ -1,27 +1,65 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useQuery } from '@apollo/client';
+import Modal from 'react-modal';
+import { useQuery, useMutation } from '@apollo/client';
 import { GET_LOOPS_BY_USER, QUERY_ME } from '../utils/queries';
-import { FaBackward, FaForward } from 'react-icons/fa';
+import { UPDATE_USERNAME } from '../utils/mutations';
 import { useNavigate } from 'react-router-dom';
-import { FaCommentAlt, FaHeart, FaTrashAlt, FaChevronDown, FaUser } from 'react-icons/fa';
+import { FaCommentAlt, FaHeart, FaTrashAlt, FaChevronDown } from 'react-icons/fa';
+
+Modal.setAppElement('#root');
 
 const ProfilePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
     const [frameIndices, setFrameIndices] = useState<{ [key: string]: number }>({});
-    const [currentPage, setCurrentPage] = useState(1);
     const navigate = useNavigate();
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const { data: userData } = useQuery(QUERY_ME);
+    const [newUsername, setNewUsername] = useState('');
+    const [updateUsername] = useMutation(UPDATE_USERNAME);
+
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const { data: userData } = useQuery(QUERY_ME);
     const { data: loopsData, loading: loopsLoading, error: loopsError } = useQuery(GET_LOOPS_BY_USER, {
         skip: !userData,
-        variables: { userId: userData?.me?._id, page: currentPage, limit: 10 },
+        variables: { userId: userData?.me?._id },
     });
 
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
     };
+
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => setIsModalOpen(false);
+    const handleUsernameChange = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.error("No token found, user is not authenticated");
+            return;
+        }
+    
+        try {
+            // Use Apollo Client to call the mutation with correct arguments
+            const { data } = await updateUsername({
+                variables: { 
+                    userId: userData?.me?._id,  // userId should come from local storage or context
+                    username: newUsername // pass the 'newUsername' as 'username'
+                }
+            });
+    
+            if (data) {
+                console.log("Username updated successfully:", data.updateUsername);
+            } else {
+                console.error("No data returned from mutation");
+            }
+    
+        } catch (error) {
+            console.error("Error updating username:", error);
+        }
+    
+        setIsModalOpen(false); // Close modal on success
+    };
+
 
     const logout = () => {
         localStorage.removeItem('authToken');
@@ -70,10 +108,6 @@ const ProfilePage: React.FC = () => {
         };
     }, [loops]);
 
-    const handlePageChange = (direction: 'next' | 'prev') => {
-        setCurrentPage((prev) => (direction === 'next' ? prev + 1 : Math.max(prev - 1, 1)));
-    };
-
     if (loopsLoading || !userData) return <div>Loading...</div>;
     if (loopsError) return <div>Error fetching loops: {loopsError.message}</div>;
 
@@ -94,7 +128,46 @@ const ProfilePage: React.FC = () => {
                     {dropdownOpen && (
                         <div className="absolute bg-white shadow-md rounded-lg mt-2 border border-gray-300 z-20">
                             <div className="p-4 text-left space-y-2">
-                                <h2 className="text-sm">Change Username</h2>
+                                <div>
+                                    {/* Change Username Button */}
+                                    <button
+                                        className="text-sm cursor-pointer text-blue-600"
+                                        onClick={openModal}
+                                    >
+                                        Change Username
+                                    </button>
+
+                                    {/* Modal Component */}
+                                    <Modal
+                                        isOpen={isModalOpen}
+                                        onRequestClose={closeModal}
+                                        className="bg-white p-6 rounded shadow-lg w-96 mx-auto mt-20"
+                                        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+                                    >
+                                        <h2 className="text-lg font-bold mb-4">Change Username</h2>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter new username"
+                                            value={newUsername}
+                                            onChange={(e) => setNewUsername(e.target.value)}
+                                            className="border border-gray-300 rounded px-4 py-2 w-full mb-4"
+                                        />
+                                        <div className="flex justify-end space-x-2">
+                                            <button
+                                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                                                onClick={closeModal}
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                className="bg-blue-600 text-white px-4 py-2 rounded"
+                                                onClick={handleUsernameChange}
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
+                                    </Modal>
+                                </div>
                                 <h2 className="text-sm">Account Email: {userData?.me?.email || 'My Email'}</h2>
                                 <div
                                     className="text-sm cursor-pointer text-blue-600"
@@ -111,59 +184,40 @@ const ProfilePage: React.FC = () => {
             {/* display loops */}
             <div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {loops
-                        .slice((currentPage - 1) * 12, currentPage * 12) // Show 12 loops per page
-                        .map((loop: any) => (
-                            <div
-                                key={loop._id}
-                                className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 lg:mx-20 "
-                            >
-                                {/* Frame Preview */}
-                                <div className="aspect-square flex justify-center items-center p-4">
-                                    <img
-                                        src={loop.frames?.[frameIndices[loop._id] || 0]?.canvasImg || ''}
-                                        alt={`Frame ${frameIndices[loop._id] || 0}`}
-                                        className="object-cover w-full h-full rounded-lg shadow-lg border-indigo-900 border-2"
-                                    />
-                                </div>
-
-                                {/* Loop Details */}
-                                <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
-    {/* Comments */}
-    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
-        <FaCommentAlt size={24} />
-    </button>
-
-    {/* Likes */}
-    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
-        <FaHeart size={24} />
-    </button>
-
-    {/* Trash */}
-    <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
-        <FaTrashAlt size={24} />
-    </button>
-</div>
+                    {loops.map((loop: any) => (
+                        <div
+                            key={loop._id}
+                            className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 lg:mx-20 "
+                        >
+                            {/* Frame Preview */}
+                            <div className="aspect-square flex justify-center items-center p-4">
+                                <img
+                                    src={loop.frames?.[frameIndices[loop._id] || 0]?.canvasImg || ''}
+                                    alt={`Frame ${frameIndices[loop._id] || 0}`}
+                                    className="object-cover w-full h-full rounded-lg shadow-lg border-indigo-900 border-2"
+                                />
                             </div>
-                        ))}
-                </div>
 
-                {/* Pagination */}
-                <footer className="flex justify-between">
-                    <button
-                        className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
-                        disabled={currentPage === 1}
-                        onClick={() => handlePageChange('prev')}
-                    >
-                        <FaBackward />
-                    </button>
-                    <button
-                        className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 text-sm"
-                        onClick={() => handlePageChange('next')}
-                    >
-                        <FaForward />
-                    </button>
-                </footer>
+                            {/* Loop Details */}
+                            <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
+                                {/* Comments */}
+                                <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+                                    <FaCommentAlt size={24} />
+                                </button>
+
+                                {/* Likes */}
+                                <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+                                    <FaHeart size={24} />
+                                </button>
+
+                                {/* Trash */}
+                                <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+                                    <FaTrashAlt size={24} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
