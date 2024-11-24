@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import { GET_LOOPS_BY_USER,  } from "../utils/queries";
 
 const UserPage: React.FC = () => {
     return (

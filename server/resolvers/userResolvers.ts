@@ -36,8 +36,21 @@ const userResolvers = {
             }
             return user;
         },
-        getUserbyId: async (_parent: any, {_id}: UserArgs ) => {
-            return User.findById(_id).populate("loops").populate("comments");
+        getUserById: async (_parent: any, { _id }: UserArgs) => {
+            try {
+                const user = await User.findById(_id)
+                    .populate("loops")
+                    .populate("comments");
+        
+                if (!user) {
+                    throw new Error("User not found");
+                }
+        
+                return user;
+            } catch (error) {
+                console.error(error);
+                throw new Error("Failed to fetch user by ID");
+            }
         },
         getUserByLoop: async (_parent: any, {_id}: LoopArgs) => {
             try {
