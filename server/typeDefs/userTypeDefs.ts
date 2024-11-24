@@ -31,6 +31,7 @@ const userTypeDefs = gql`
   type Mutation {
     register(username: String!, email: String!, password: String!): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
+    updateUsername(userId: ID!, username: String!): User!
   }
 `;
 

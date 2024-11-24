@@ -109,8 +109,26 @@ const userResolvers = {
         
             const token = generateToken(testUser.id.toString());
             return { token, user: testUser };
-        }
+        },
         
+        updateUsername: async (_parent: any, { userId, username }: { userId: string, username: string }) => {
+            try {
+              const updatedUser = await User.findByIdAndUpdate(
+                userId, // The user ID to update
+                { username }, // The new username
+                { new: true, runValidators: true } // Options to return the updated user and validate
+              );
+          
+              if (!updatedUser) {
+                throw new Error("User not found");
+              }
+          
+              return updatedUser;
+            } catch (error) {
+              console.error("Error updating username:", error);
+              throw new Error("Failed to update username");
+            }
+          }
         
     }
 };
