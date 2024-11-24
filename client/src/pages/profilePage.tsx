@@ -21,6 +21,8 @@ const ProfilePage: React.FC = () => {
         refetchQueries: [{ query: GET_LOOPS_BY_USER, variables: { userId: userData?.me?._id } }],
         awaitRefetchQueries: true,
     });
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [loopToDelete, setLoopToDelete] = useState<string | null>(null);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -69,14 +71,34 @@ const ProfilePage: React.FC = () => {
         navigate('/login');
     };
 
-    const handleDeleteLoop = async (loopId: string) => {
+    const openDeleteModal = (loopId: string) => {
+        setIsDeleteModalOpen(true);
+        setLoopToDelete(loopId);
+    };
+
+    const closeDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setLoopToDelete(null);
+    };
+
+    const handleDeleteLoop = async () => {
+        if (!loopToDelete) return;
+    
         try {
-            await deleteLoop({ variables: { _id: loopId } });
-            console.log("Loop deleted successfully!");
-            setLoops((prev) => prev.filter((loop) => loop._id !== loopId));
+            await deleteLoop({
+                variables: { _id: loopToDelete },
+            });
+            console.log("Loop deleted successfully from database!");
+            setLoops((prev) => prev.filter((loop) => loop._id !== loopToDelete));
         } catch (error) {
-            console.error("Error deleting loop:", error);
+            if (error instanceof Error) {
+                console.error("Error deleting loop:", error.message);
+            } else {
+                console.error("Unknown error deleting loop:", error);
+            }
         }
+    
+        closeDeleteModal();
     };
 
     // Update loops when query data changes
@@ -125,67 +147,52 @@ const ProfilePage: React.FC = () => {
     if (loopsError) return <div>Error fetching loops: {loopsError.message}</div>;
 
     return (
-        <div className="profile-page-container min-h-screen bg-blue-100 p-4 flex flex-col gap-6">
-            <div className='relative inline-flex'>
-                {/* Username dropdown */}
+<div className="profile-page-container min-h-screen bg-blue-100 p-4 flex flex-col gap-6">
+            {/* Profile and settings */}
+            <div className="relative inline-flex">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 p-3 items-center">
-                    <div
-                        className="flex cursor-pointer space-x-2"
-                        onClick={toggleDropdown}
-                    >
+                    <div className="flex cursor-pointer space-x-2" onClick={toggleDropdown}>
                         <h1 className="text-2xl font-bold">{userData?.me?.username || 'My Profile'}</h1>
-                        <span className="text-lg">&#9662;</span> {/* Dropdown arrow */}
+                        <span className="text-lg">&#9662;</span>
                     </div>
-
-                    {/* Dropdown menu */}
                     {dropdownOpen && (
                         <div className="absolute bg-white shadow-md rounded-lg mt-2 border border-gray-300 z-20">
                             <div className="p-4 text-left space-y-2">
-                                <div>
-                                    {/* Change Username Button */}
-                                    <button
-                                        className="text-sm cursor-pointer text-blue-600"
-                                        onClick={openModal}
-                                    >
-                                        Change Username
-                                    </button>
-
-                                    {/* Modal Component */}
-                                    <Modal
-                                        isOpen={isModalOpen}
-                                        onRequestClose={closeModal}
-                                        className="bg-white p-6 rounded shadow-lg w-96 mx-auto mt-20"
-                                        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-                                    >
-                                        <h2 className="text-lg font-bold mb-4">Change Username</h2>
-                                        <input
-                                            type="text"
-                                            placeholder="Enter new username"
-                                            value={newUsername}
-                                            onChange={(e) => setNewUsername(e.target.value)}
-                                            className="border border-gray-300 rounded px-4 py-2 w-full mb-4"
-                                        />
-                                        <div className="flex justify-end space-x-2">
-                                            <button
-                                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
-                                                onClick={closeModal}
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                className="bg-blue-600 text-white px-4 py-2 rounded"
-                                                onClick={handleUsernameChange}
-                                            >
-                                                Save
-                                            </button>
-                                        </div>
-                                    </Modal>
-                                </div>
-                                <h2 className="text-sm">Account Email: {userData?.me?.email || 'My Email'}</h2>
-                                <div
-                                    className="text-sm cursor-pointer text-blue-600"
-                                    onClick={logout} // Log the user out when clicked
+                                <button className="text-sm cursor-pointer text-blue-600" onClick={openModal}>
+                                    Change Username
+                                </button>
+                                {/* Username Modal */}
+                                <Modal
+                                    isOpen={isModalOpen}
+                                    onRequestClose={closeModal}
+                                    className="bg-white p-6 rounded shadow-lg w-96 mx-auto mt-20"
+                                    overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
                                 >
+                                    <h2 className="text-lg font-bold mb-4">Change Username</h2>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter new username"
+                                        value={newUsername}
+                                        onChange={(e) => setNewUsername(e.target.value)}
+                                        className="border border-gray-300 rounded px-4 py-2 w-full mb-4"
+                                    />
+                                    <div className="flex justify-end space-x-2">
+                                        <button
+                                            className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                                            onClick={closeModal}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            className="bg-blue-600 text-white px-4 py-2 rounded"
+                                            onClick={handleUsernameChange}
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                </Modal>
+                                <h2 className="text-sm">Account Email: {userData?.me?.email || 'My Email'}</h2>
+                                <div className="text-sm cursor-pointer text-blue-600" onClick={logout}>
                                     Logout
                                 </div>
                             </div>
@@ -194,47 +201,58 @@ const ProfilePage: React.FC = () => {
                 </div>
             </div>
 
-            {/* display loops */}
-            <div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {loops.map((loop: any) => (
-                        <div
-                            key={loop._id}
-                            className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 lg:mx-20 "
-                        >
-                            {/* Frame Preview */}
-                            <div className="aspect-square flex justify-center items-center p-4">
-                                <img
-                                    src={loop.frames?.[frameIndices[loop._id] || 0]?.canvasImg || ''}
-                                    alt={`Frame ${frameIndices[loop._id] || 0}`}
-                                    className="object-cover w-full h-full rounded-lg shadow-lg border-indigo-900 border-2"
-                                />
-                            </div>
-
-                            {/* Loop Details */}
-                            <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
-                                {/* Comments */}
-                                <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
-                                    <FaCommentAlt size={24} />
-                                </button>
-
-                                {/* Likes */}
-                                <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
-                                    <FaHeart size={24} />
-                                </button>
-
-                                {/* Trash */}
-                                <button
-                                    className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-red-500 hover:text-white"
-                                    onClick={() => handleDeleteLoop(loop._id)}
-                                >
-                                    <FaTrashAlt size={24} />
-                                </button>
-                            </div>
+            {/* Loops */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {loops.map((loop) => (
+                    <div key={loop._id} className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300">
+                        <div className="aspect-square flex justify-center items-center p-4">
+                            <img
+                                src={loop.frames?.[frameIndices[loop._id] || 0]?.canvasImg || ''}
+                                alt={`Frame ${frameIndices[loop._id] || 0}`}
+                                className="object-cover w-full h-full rounded-lg shadow-lg border-indigo-900 border-2"
+                            />
                         </div>
-                    ))}
-                </div>
+                        <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
+                            <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+                                <FaCommentAlt size={24} />
+                            </button>
+                            <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+                                <FaHeart size={24} />
+                            </button>
+                            <button
+                                className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-red-500 hover:text-white"
+                                onClick={() => openDeleteModal(loop._id)}
+                            >
+                                <FaTrashAlt size={24} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onRequestClose={closeDeleteModal}
+                className="bg-white p-6 rounded shadow-lg w-96 mx-auto mt-20"
+                overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            >
+                <h2 className="text-lg font-bold mb-4">Are you sure you want to delete this loop?</h2>
+                <div className="flex justify-end space-x-2">
+                    <button
+                        className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                        onClick={closeDeleteModal}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        className="bg-red-600 text-white px-4 py-2 rounded"
+                        onClick={handleDeleteLoop}
+                    >
+                        Delete
+                    </button>
+                </div>
+            </Modal>
         </div>
     );
 };
