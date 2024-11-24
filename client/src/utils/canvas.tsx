@@ -6,6 +6,7 @@ import { SAVE_LOOP } from "./mutations";
 import Auth from "./auth.js";
 import "../pages/canvasPage.css";
 import socket from "./socket";
+import {colorsA} from './canvasTools/canvasColors.js';
 
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
@@ -29,6 +30,9 @@ const CanvasComponent: React.FC = () => {
     const [frames, setFrames] = useState<{ id: string, canvasImg: string | Blob | null }[]>([
         { id: uuidv4(), canvasImg: null }
     ]);
+
+    const [selectedColor, setSelectedColor] = useState(0)
+    const [colors, setColors] = useState<{color: string}[]>([...colorsA])
 
 
     //handles all selected colors on the page
@@ -101,12 +105,38 @@ const CanvasComponent: React.FC = () => {
 
     const changeColor = (color: string) => {
         setColorCode(color)
+
+        setColors((prevColors) => {
+            const updatedColors = [...prevColors];
+            //prevents changing the last colors value
+            if (selectedColor >= 0 && selectedColor < updatedColors.length) {
+                updatedColors[selectedColor] = { color };
+            }
+            return updatedColors;
+        });
+
         return colorCode
     };
 
     const changeColorCode = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { value } = e.target;
         setColorCode(value)
+
+
+        //set the color of the color box currently selected
+        setColors((prevColors) => {
+            const updatedColors = [...prevColors];
+            if (selectedColor >= 0 && selectedColor < updatedColors.length) {
+                updatedColors[selectedColor] = { color: value };
+            }
+            return updatedColors;
+        });
+    };
+
+    //handles all the color boxes.
+    const handleColorBoxClick = (index: number) => {
+        setSelectedColor(index);
+        setColorCode(colors[index]?.color || "#000000"); // Update the picker to show the selected color
     };
 
     const handleBrushSizeChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -489,6 +519,21 @@ const CanvasComponent: React.FC = () => {
 
                         <div className="hexColorPicker p-3">
                             <HexColorPicker color={colorCode} onChange={changeColor} />
+                        </div>
+
+                        <div className="colorsContainter">
+                            {colors.map((color, index) => (
+                                <button 
+                                    key={index} 
+                                    className="color" 
+                                    style={
+                                        { backgroundColor: `${color.color}`}
+                                    } 
+                                    onClick={() => {
+                                        handleColorBoxClick(index)
+                                    }}>
+                                    </button>
+                            ))}
                         </div>
 
                         <div className="colorCodeContainer py-2">
