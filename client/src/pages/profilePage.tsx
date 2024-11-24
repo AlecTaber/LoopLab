@@ -2,9 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import Modal from 'react-modal';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_LOOPS_BY_USER, QUERY_ME } from '../utils/queries';
-import { UPDATE_USERNAME } from '../utils/mutations';
+import { UPDATE_USERNAME, DELETE_LOOP } from '../utils/mutations';
 import { useNavigate } from 'react-router-dom';
-import { FaCommentAlt, FaHeart, FaTrashAlt, FaChevronDown } from 'react-icons/fa';
+import { FaCommentAlt, FaHeart, FaTrashAlt } from 'react-icons/fa';
 
 Modal.setAppElement('#root');
 
@@ -17,6 +17,10 @@ const ProfilePage: React.FC = () => {
     const { data: userData } = useQuery(QUERY_ME);
     const [newUsername, setNewUsername] = useState('');
     const [updateUsername] = useMutation(UPDATE_USERNAME);
+    const [deleteLoop] = useMutation(DELETE_LOOP, {
+        refetchQueries: [{ query: GET_LOOPS_BY_USER, variables: { userId: userData?.me?._id } }],
+        awaitRefetchQueries: true,
+    });
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -37,25 +41,25 @@ const ProfilePage: React.FC = () => {
             console.error("No token found, user is not authenticated");
             return;
         }
-    
+
         try {
             const { data } = await updateUsername({
-                variables: { 
+                variables: {
                     userId: userData?.me?._id,
-                    username: newUsername 
+                    username: newUsername
                 }
             });
-    
+
             if (data) {
                 console.log("Username updated successfully:", data.updateUsername);
             } else {
                 console.error("No data returned from mutation");
             }
-    
+
         } catch (error) {
             console.error("Error updating username:", error);
         }
-    
+
         setIsModalOpen(false); // Close modal on success
     };
 
@@ -63,6 +67,16 @@ const ProfilePage: React.FC = () => {
     const logout = () => {
         localStorage.removeItem('authToken');
         navigate('/login');
+    };
+
+    const handleDeleteLoop = async (loopId: string) => {
+        try {
+            await deleteLoop({ variables: { _id: loopId } });
+            console.log("Loop deleted successfully!");
+            setLoops((prev) => prev.filter((loop) => loop._id !== loopId));
+        } catch (error) {
+            console.error("Error deleting loop:", error);
+        }
     };
 
     // Update loops when query data changes
@@ -210,7 +224,10 @@ const ProfilePage: React.FC = () => {
                                 </button>
 
                                 {/* Trash */}
-                                <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
+                                <button
+                                    className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-red-500 hover:text-white"
+                                    onClick={() => handleDeleteLoop(loop._id)}
+                                >
                                     <FaTrashAlt size={24} />
                                 </button>
                             </div>
