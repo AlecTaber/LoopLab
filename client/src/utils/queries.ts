@@ -36,6 +36,20 @@ export const QUERY_ME = gql`
     }
 `;
 
+export const GET_USER_BY_ID = gql`
+query getUserById($id: ID!) {
+    getUserById(_id: $id) {
+        _id
+        username
+        email
+        loops {
+            _id
+            title
+        }
+    }
+}
+`;
+
 // export const QUERY_LOOPS = gql`
 //  query loop(id: $id) {
 //     id
@@ -72,8 +86,8 @@ query GetLoops {
 `;
 
 export const GET_LOOPS_BY_USER = gql`
-  query GetLoopsByUser($userId: ID!, $page: Int!, $limit: Int!) {
-    getLoopsByUser(userId: $userId, page: $page, limit: $limit) {
+  query GetLoopsByUser($userId: ID!) {
+    getLoopsByUser(userId: $userId) {
       _id
       frames {
         canvasImg

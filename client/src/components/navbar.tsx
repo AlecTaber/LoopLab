@@ -30,7 +30,7 @@ const NavBar: React.FC = () => {
     }
 
     return (
-        <div className="navbar-container sticky top-0">
+        <div className="navbar-container sticky z-50 top-0">
     <nav className="flex items-center justify-between p-4 bg-indigo-600">
         {/* Left Section: Navigation Buttons */}
         <div className="flex items-center space-x-4">

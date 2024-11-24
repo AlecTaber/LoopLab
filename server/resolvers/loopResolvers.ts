@@ -64,7 +64,7 @@ const LoopResolvers = {
                     .sort({ createdAt: -1 });
                 return loops;
             } catch (error) {
-                console.error("Error fetching loops by user:", error);
+                console.error("Error fetching loops for user ${userId}:", error);
                 throw new Error("Failed to fetch loops by user");
             }
         }
