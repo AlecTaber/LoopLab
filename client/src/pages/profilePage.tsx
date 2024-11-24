@@ -152,13 +152,13 @@ const ProfilePage: React.FC = () => {
             <div className="relative inline-flex">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 p-3 items-center">
                     <div className="flex cursor-pointer space-x-2" onClick={toggleDropdown}>
-                        <h1 className="text-2xl font-bold">{userData?.me?.username || 'My Profile'}</h1>
-                        <span className="text-lg">&#9662;</span>
+                        <h1 className="text-2xl font-bold text-indigo-600">{userData?.me?.username || 'My Profile'}</h1>
+                        <span className="text-lg text-indigo-600">&#9662;</span>
                     </div>
                     {dropdownOpen && (
                         <div className="absolute bg-white shadow-md rounded-lg mt-2 border border-gray-300 z-20">
                             <div className="p-4 text-left space-y-2">
-                                <button className="text-sm cursor-pointer text-blue-600" onClick={openModal}>
+                                <button className="text-sm cursor-pointer text-blue-600 hover:underline" onClick={openModal}>
                                     Change Username
                                 </button>
                                 {/* Username Modal */}
@@ -192,7 +192,7 @@ const ProfilePage: React.FC = () => {
                                     </div>
                                 </Modal>
                                 <h2 className="text-sm">Account Email: {userData?.me?.email || 'My Email'}</h2>
-                                <div className="text-sm cursor-pointer text-blue-600" onClick={logout}>
+                                <div className="text-sm cursor-pointer text-blue-600 hover:underline" onClick={logout}>
                                     Logout
                                 </div>
                             </div>
