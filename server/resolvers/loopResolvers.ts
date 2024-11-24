@@ -101,13 +101,16 @@ const LoopResolvers = {
                     { new: true }
                 );
 
-                // Emit the newLoop event
+                // Emit the new loop event
                 io.emit('newLoop', {
-                    _id: newLoop.id,
+                    _id: newLoop._id,
+                    userId: newLoop.userId,
                     title: newLoop.title,
                     frames: newLoop.frames,
+                    likeCount: newLoop.likeCount || 0,
+                    comments: [],
                     createdAt: newLoop.createdAt,
-                    userId: newLoop.userId,
+                    updatedAt: newLoop.updatedAt,
                 });
 
                 return newLoop;

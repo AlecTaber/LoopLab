@@ -61,13 +61,13 @@ export const CREATE_COMMENT = gql`
 `;
 
 export const ADD_LIKE_TO_LOOP = gql`
-  mutation AddLikeToLoop($_id: ID!) {
+mutation AddLikeToLoop($_id: ID!) {
     addLikeToLoop(_id: $_id) {
-      _id
-      likeCount
-      likes {
-        userId
-      }
+        _id
+        likeCount
+        likes {
+            userId
+        }
     }
-  }
+}
 `;

@@ -9,7 +9,7 @@ export interface ILike extends Document {
 
 export const likeSchema = new Schema<ILike>({
     userId: {type: Schema.Types.ObjectId, ref: "User", required: true },
-    loopId: {type: Schema.Types.ObjectId, ref: "Loop"},
+    loopId: { type: Schema.Types.ObjectId, ref: "Loop", required: true },
     commentId: {type: Schema.Types.ObjectId, ref: "Comment"},
 });
 
