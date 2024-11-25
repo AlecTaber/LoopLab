@@ -58,8 +58,8 @@ To test this application, use the npm run test command in your terminal. It will
 
 ## Contact
 
-- GitHub: Ashlin
-- Email: 
+- GitHub: [ashlinlee98](https://github.com/ashlinlee98)
+- Email: [ashlinlee98@gmail.com](mailto:ashlinlee98@gmail.com)
 
 - GitHub: [AlecTaber](https://github.com/AlecTaber)
 - Email: [alectaber12@gmail.com](mailto:alectaber12@gmail.com)
