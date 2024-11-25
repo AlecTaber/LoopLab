@@ -13,7 +13,7 @@ export interface ILoop extends Document {
     title: string;
     frames: IFrame[];
     comments: Types.ObjectId[];
-    likes: [ILike];
+    likes: ILike[];
     likeCount: number
     createdAt: Date;
     updatedAt: Date; 

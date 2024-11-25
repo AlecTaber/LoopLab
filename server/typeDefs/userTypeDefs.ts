@@ -24,13 +24,14 @@ const userTypeDefs = gql`
 
   type Query {
     me: User
-    getUserbyId(_id: ID!): User!
+    getUserById(_id: ID!): User!
     getUserByLoop(_id: ID!): User!
   }
 
   type Mutation {
     register(username: String!, email: String!, password: String!): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
+    updateUsername(userId: ID!, username: String!): User!
   }
 `;
 
