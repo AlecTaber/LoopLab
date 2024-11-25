@@ -5,7 +5,6 @@ const commentTypeDefs = gql`
   type Comment {
     _id: ID!
     body: String!
-    username: String!
     userId: ID!
     loopId: ID!
     likes: [Like]
