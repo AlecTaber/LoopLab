@@ -47,7 +47,7 @@ userSchema.methods.isCorrectPassword = async function (password: string){
 
 //counts the number of loops within the 
 userSchema.virtual('loopCount').get(function() {
-  return this.loops.length;
+  return this.loops ? this.loops.length : 0;
 });
 
 const User = mongoose.model<IUser>('User', userSchema);
