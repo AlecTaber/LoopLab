@@ -389,19 +389,32 @@ const CanvasComponent: React.FC = () => {
     };
 
     const clearCanvas = () => {
-        const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
-        if (!ctx) return;
-
-        const userConfirm = confirm("Are you sure you want to clear the canvas?")
-        
-
-        if(userConfirm){
-            //clear the grid completly
-            ctx.clearRect(0, 0, canvasHeight, canvasWidth);
-            //redraw the grid
-            drawGrid(ctx)
+        const canvas = canvasRef.current;
+        if (!canvas) {
+            console.error("Canvas reference is not set!");
+            return;
+        }
+    
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) {
+            console.error("Failed to get canvas context!");
+            return;
+        }
+    
+        console.log("Canvas dimensions: ", canvas.width, canvas.height);  // Log canvas dimensions
+    
+        const userConfirm = window.confirm("Are you sure you want to clear the canvas?");
+        if (userConfirm) {
+            // Clear the entire canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log("Canvas cleared");
+    
+            // Redraw the grid
+            drawGrid(ctx);
+            console.log("Grid redrawn");
         }
     };
+    
 
     const playAnimation = () => {
         if (frames.length <= 1){
@@ -609,7 +622,7 @@ const CanvasComponent: React.FC = () => {
                             <button className="clear" onClick={() => {
                                 const userClearConfirm = confirm("Are you sure you want to clear the canvas?");
                                 if(userClearConfirm){
-                                    clearCanvas
+                                    clearCanvas();
                                 }}}>
                                 Clear
                             </button>
