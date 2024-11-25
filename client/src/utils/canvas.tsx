@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
-import { FaRegPlusSquare, FaRegMinusSquare } from "react-icons/fa";
+import { FaRegPlusSquare, FaRegMinusSquare, FaCaretUp} from "react-icons/fa";
 import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
 import { SAVE_LOOP } from "./mutations";
@@ -7,6 +7,7 @@ import Auth from "./auth.js";
 import "../pages/canvasPage.css";
 import socket from "./socket";
 import {colorsA} from './canvasTools/canvasColors.js';
+import Modal from "react-modal";
 
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
@@ -15,6 +16,8 @@ import uploadToCloudinary from "./uploadToCloudinary";
 var canvasWidth = 500 | 0;
 // eslint-disable-next-line
 var canvasHeight = 500 | 0;
+
+Modal.setAppElement('#root')
 
 //should update the page depending on which pixel was clicked on.
 const CanvasComponent: React.FC = () => {
@@ -45,10 +48,22 @@ const CanvasComponent: React.FC = () => {
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+    const [isSaveModalOpen, setModelOpenClose] = useState(false)
     const [saveLoop] = useMutation(SAVE_LOOP)
+    const [title, setTitle] = useState("title")
 
+    const toggleSaveModel = () => {
+        setModelOpenClose(!isSaveModalOpen)
+        console.log("Modal opened or closed...")
+        console.log(`${isSaveModalOpen}`)
+    }
 
     const handleLoopSave = async () => {
+        const userConfirm = confirm("Are you sure you want to save?")
+        if(!userConfirm){
+            return
+        };
+
         try {
             await saveCurrentFrameData();
             const updatedFrames = await Promise.all(
@@ -85,10 +100,10 @@ const CanvasComponent: React.FC = () => {
                 canvasImg: frame.canvasImg,
             }));
 
-            const title = `My Loop - ${new Date().toLocaleString()}`;
-            console.log('Payload for save loop mutation:', { title, frames: validFrames });
+            const updatedTitle = `${title} - ${new Date().toLocaleString()}`;
+            console.log('Payload for save loop mutation:', { title: updatedTitle, frames: validFrames });
             const { data } = await saveLoop({
-                variables: { input: { title, frames: formattedFrames } },
+                variables: { input: { title: updatedTitle, frames: formattedFrames } },
             });
 
             console.log('Loop saved successfully:', data.saveLoop);
@@ -372,10 +387,14 @@ const CanvasComponent: React.FC = () => {
         const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
-        //clear the grid completly
-        ctx.clearRect(0, 0, canvasHeight, canvasWidth);
-        //redraw the grid
-        drawGrid(ctx)
+        const userConfirm = confirm("Are you sure you want to clear the canvas?")
+
+        if(userConfirm){
+            //clear the grid completly
+            ctx.clearRect(0, 0, canvasHeight, canvasWidth);
+            //redraw the grid
+            drawGrid(ctx)
+        }
     };
 
     const playAnimation = () => {
@@ -473,6 +492,26 @@ const CanvasComponent: React.FC = () => {
 
     return (
         <div>
+            <div>
+                {isSaveModalOpen && (
+                    <div className="absolute bg-white shadow-md rounded-lg mt-2 border border-gray-300 z-20 flex items-center justify-center">
+                        <Modal
+                            isOpen={isSaveModalOpen}
+                            onRequestClose={toggleSaveModel}
+                            className="bg-white p-6 rounded shadow-lg w-96 mx-auto mt-20"
+                            overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+                        >
+                            <button className="quitModal" onClick={toggleSaveModel}><FaCaretUp /></button>
+                            <h2 className="flex items-center">Save your Loop!</h2>
+                            <form>
+                                <label>Title: <input className="title" onChange={(e: any) => setTitle(e.target.value)}></input></label>
+                                <button onClick={handleLoopSave} className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">Save Loop!</button>
+                            </form>
+                        </Modal>
+                        
+                    </div>
+                )}
+            </div>
             {Auth.loggedIn() ? (
                 <div className="canvasComponentContainer">
                     <div className="framesContainer fixed top-20 p-4 py-2">
@@ -572,8 +611,9 @@ const CanvasComponent: React.FC = () => {
                         </div>
 
                         <div>
-                            <button className="saveLoop" onClick={handleLoopSave}>
-                            Save Loop
+
+                            <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={toggleSaveModel}>
+                              Save Loop
                             </button>
                         </div>
                         <div className="left-right flex flex-col items-start space-y-2">
@@ -589,8 +629,6 @@ const CanvasComponent: React.FC = () => {
                 </div>
             )}
         </div>
-
-
     );
 
 }
