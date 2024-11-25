@@ -246,35 +246,47 @@ const HomePage: React.FC = () => {
                         {/* Loop Details */}
                         <div className="w-full lg:w-2/3 flex flex-col">
                             <div className="w-full h-full p-6 flex flex-col">
-                                <div className="bg-indigo-500 text-white flex justify-between items-center p-3 rounded-t-lg shadow-md">
-                                    <div className="flex items-center space-x-2">
-                                        <h2 className="text-2xl font-bold">{usernames[loop._id] || 'Loading...'}</h2>
-                                        <button
-                                            className="px-3 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
-                                            onClick={() => handleProfileClick(loop.userId)}
-                                        >
-                                            <FaUser />
-                                        </button>
-                                    </div>
-                                    <div className="flex space-x-2">
-                                        <span className="text-sm">{loop.likeCount}</span>
-                                        <button
-                                            className={`px-4 py-1 rounded-lg text-sm hover:bg-gray-200 ${likedLoops[loop._id]
-                                                ? 'bg-white text-red-500'
-                                                : 'bg-white text-indigo-500'
-                                                }`}
-                                            onClick={() => handleLike(loop._id)}
-                                        >
-                                            <FaHeart />
-                                        </button>
-                                        <button
-                                            className="openComment px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
-                                            onClick={() => openModal(loop._id)}
-                                        >
-                                            <FaCommentAlt />
-                                        </button>
-                                    </div>
+                            <div className="bg-indigo-500 text-white p-3 rounded-t-lg shadow-md">
+                            {/* Container for username and buttons */}
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                {/* Username */}
+                                <div className="mb-3 sm:mb-0 flex justify-center sm:justify-start">
+                                    <h2 className="text-2xl font-bold">{usernames[loop._id] || 'Loading...'}</h2>
                                 </div>
+                                {/* Buttons */}
+                                <div className="flex justify-center items-center space-x-2">
+                                    {/* Like count */}
+                                    <span className="text-sm">{loop.likeCount}</span>
+
+                                    {/* Like button */}
+                                    <button
+                                        className={`px-4 py-1 rounded-lg text-sm hover:bg-gray-200 ${likedLoops[loop._id]
+                                            ? 'bg-white text-red-500'
+                                            : 'bg-white text-indigo-500'
+                                            }`}
+                                        onClick={() => handleLike(loop._id)}
+                                    >
+                                        <FaHeart />
+                                    </button>
+
+                                    {/* Comment button */}
+                                    <button
+                                        className="openComment px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
+                                        onClick={() => openModal(loop._id)}
+                                    >
+                                        <FaCommentAlt />
+                                    </button>
+
+                                    {/* Profile button */}
+                                    <button
+                                        className="px-3 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
+                                        onClick={() => handleProfileClick(loop.userId)}
+                                    >
+                                        <FaUser />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                                 <div className="bg-gray-50 p-4 rounded-b-lg flex-1 mt-4 shadow-md">
                                     <h3 className="text-sm font-bold mb-2">Comments</h3>
                                     {loop.comments && loop.comments.length > 0 ? (
