@@ -300,12 +300,12 @@ const ProfilePage: React.FC = () => {
             <Modal
                 isOpen={isCommentsModalOpen}
                 onRequestClose={closeCommentsModal}
-                className="bg-white p-6 rounded shadow-lg w-96 mx-auto mt-20"
+                className="bg-white p-6 rounded shadow-lg w-2/3 mx-auto mt-10 max-h-[80vh] overflow-y-auto"
                 overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
             >
-                <h2 className="text-lg font-bold mb-4 text-indigo-600">Comments</h2>
+                <h2 className="text-xl font-bold mb-4 text-indigo-600">Comments</h2>
                 {commentsError ? (
-                    <p className="text-red-500">Failed to load comments: {commentsError.message}</p>
+                    <p className="text-red-500 text-sm">Failed to load comments: {commentsError.message}</p>
                 ) : fetchedComments.length > 0 ? (
                     <div className="space-y-4">
                         {fetchedComments.map((comment) => (
@@ -313,12 +313,12 @@ const ProfilePage: React.FC = () => {
                                 <p className="text-sm font-semibold text-indigo-700">
                                     {comment.username || "Unknown User"}
                                 </p>
-                                <p className="text-sm text-gray-600">{comment.body}</p>
+                                <p className="text-xs text-gray-600">{comment.body}</p>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p className="text-gray-500">No comments available for this loop.</p>
+                    <p className="text-gray-500 text-sm">No comments available for this loop.</p>
                 )}
                 <div className="flex justify-end mt-4">
                     <button
