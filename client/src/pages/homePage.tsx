@@ -268,7 +268,7 @@ const HomePage: React.FC = () => {
                                             <FaHeart />
                                         </button>
                                         <button
-                                            className="px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
+                                            className="openComment px-4 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
                                             onClick={() => openModal(loop._id)}
                                         >
                                             <FaCommentAlt />
@@ -279,7 +279,7 @@ const HomePage: React.FC = () => {
                                     <h3 className="text-sm font-bold mb-2">Comments</h3>
                                     {loop.comments && loop.comments.length > 0 ? (
                                         loop.comments.map((comment: any) => (
-                                            <p key={comment._id} className="text-sm text-gray-700 mb-1">
+                                            <p key={comment._id} className="comment text-sm text-gray-700 mb-1">
                                                 <strong>{comment.username}:</strong> {comment.body}
                                             </p>
                                         ))
