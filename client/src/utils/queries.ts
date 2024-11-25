@@ -94,6 +94,7 @@ query getLoopsByUser($userId: ID!) {
         frames {
             canvasImg
         }
+        likeCount
     }
 }
 `;
