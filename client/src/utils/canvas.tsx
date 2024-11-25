@@ -44,6 +44,7 @@ const CanvasComponent: React.FC = () => {
     const [brushSize, setBrushSize] = useState(1);
 
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isLeft, setIsLeft] = useState(true);
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -484,6 +485,11 @@ const CanvasComponent: React.FC = () => {
         }
     }, [colorCode])
 
+    // set togglePosition to be right handed first
+    const togglePosition = () => {
+        setIsLeft((prev) => !prev); // Toggle the boolean state
+    };
+
     return (
         <div>
             <div>
@@ -540,8 +546,13 @@ const CanvasComponent: React.FC = () => {
                         ></canvas>
                     </div>
 
-                    <div className="componentsContainer fixed left-3 top-20 p-4 px-4 py-2 bg-blue-400 text-white rounded shadow">
-                        <div className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
+                    
+                    <div className={`componentsContainer ${
+                                    isLeft ? "left-3" : "right-3"
+                                } top-3 transition-all duration-300`}
+                            >
+
+                        <div>
                             <label>
                                 Brush Size:{" "}
                                 <input
@@ -576,17 +587,17 @@ const CanvasComponent: React.FC = () => {
                         </div>
 
                         <div className="colorCodeContainer py-2">
-                            <label className="hex px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
+                            <label className="hex">
                                 Hex Code:{" "}
                                 <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
                             </label>
                         </div>
 
                         <div className="clear-erase flex flex-col items-start">
-                            <button className="clear px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={clearCanvas}>
+                            <button className="clear" onClick={clearCanvas}>
                                 Clear
                             </button>
-                            <button className="erase px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" 
+                            <button className="erase" 
                                 onClick={() => {
                                     if(!isClear){
                                         setClear(true);
@@ -596,13 +607,19 @@ const CanvasComponent: React.FC = () => {
                                 }}>
                                 Eraser
                             </button>
-                            <button className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                            <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
                         </div>
 
                         <div>
+
                             <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={toggleSaveModel}>
-                            Save Loop
-                                </button>
+                              Save Loop
+                            </button>
+                        </div>
+                        <div className="left-right flex flex-col items-start space-y-2">
+                            <button className="w-full sm:w-auto" onClick={togglePosition}>
+                                {isLeft ? "Right-Handed mode" : "Left-Handed mode"}
+                            </button>
                         </div>
                     </div>
                 </div>

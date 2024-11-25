@@ -39,7 +39,6 @@ const Login: React.FC = () => {
             }
         `;
 
-
         const response = await fetch(GRAPHQL_URL, {
             method: 'POST',
             headers: {
