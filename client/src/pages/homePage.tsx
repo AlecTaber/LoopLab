@@ -5,6 +5,7 @@ import { CREATE_COMMENT, ADD_LIKE_TO_LOOP } from '../utils/mutations';
 import { FaUser, FaHeart, FaCommentAlt } from 'react-icons/fa';
 import socket from '../utils/socket';
 import CommentModal from '../components/CommentModal';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage: React.FC = () => {
     const [loops, setLoops] = useState<any[]>([]);
@@ -20,6 +21,15 @@ const HomePage: React.FC = () => {
     const [addLikeToLoop] = useMutation(ADD_LIKE_TO_LOOP);
     const { data: userData } = useQuery(QUERY_ME);
     const currentUserId = userData?.me?._id;
+    const navigate = useNavigate();
+
+    const handleProfileClick = (userId: string) => {
+        if (!userId) {
+            console.error("User ID is undefined");
+            return;
+        }
+        navigate(`/user/${userId}`);
+    };
 
     console.log("Fetched current user ID:", currentUserId);
 
@@ -241,7 +251,7 @@ const HomePage: React.FC = () => {
                                         <h2 className="text-2xl font-bold">{usernames[loop._id] || 'Loading...'}</h2>
                                         <button
                                             className="px-3 py-1 rounded-lg bg-white text-indigo-500 text-sm hover:bg-gray-200"
-                                            onClick={() => console.log(`Visit profile for ${usernames[loop._id]}`)}
+                                            onClick={() => handleProfileClick(loop.userId)}
                                         >
                                             <FaUser />
                                         </button>

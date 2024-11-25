@@ -67,6 +67,7 @@ query GetLoops {
     getLoops {
         _id
         title
+        userId
         createdAt
         likeCount
         likes {
@@ -86,15 +87,15 @@ query GetLoops {
 `;
 
 export const GET_LOOPS_BY_USER = gql`
-  query GetLoopsByUser($userId: ID!) {
+query getLoopsByUser($userId: ID!) {
     getLoopsByUser(userId: $userId) {
-      _id
-      frames {
-        canvasImg
-      }
-      userId
+        _id
+        title
+        frames {
+            canvasImg
+        }
     }
-  }
+}
 `;
 
 export const GET_USER_BY_LOOP = gql`
