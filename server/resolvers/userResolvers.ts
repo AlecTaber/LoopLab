@@ -76,10 +76,12 @@ const userResolvers = {
 
     Mutation: {
         register: async (_: any, { username, email, password }: IUser) => {
+            const normalizedEmail = email.toLowerCase();
+
             const existingUser = await User.findOne({
                 $or: [
                     { username },
-                    { email }
+                    { email: normalizedEmail }
                 ],
             });
             if (existingUser) {
@@ -93,7 +95,7 @@ const userResolvers = {
             
             const newUser = new User({
                 username,
-                email,
+                email: normalizedEmail,
                 password
             });
             await newUser.save();
