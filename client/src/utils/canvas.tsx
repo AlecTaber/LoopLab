@@ -52,13 +52,13 @@ const CanvasComponent: React.FC = () => {
     const [saveLoop] = useMutation(SAVE_LOOP)
     const [title, setTitle] = useState("title")
 
+
     const toggleSaveModel = () => {
         setModelOpenClose(!isSaveModalOpen)
-        console.log("Modal opened or closed...")
-        console.log(`${isSaveModalOpen}`)
     }
 
-    const handleLoopSave = async () => {
+    const handleLoopSave = async (e: SubmitEvent) => {
+        e.preventDefault()
         const userConfirm = confirm("Are you sure you want to save?")
         if(!userConfirm){
             return
@@ -110,6 +110,7 @@ const CanvasComponent: React.FC = () => {
 
             // Emit the new loop event via Socket.io
             socket.emit("newLoop", data.saveLoop);
+
 
         } catch (err) {
             console.error('Failed to save loop:', err);
@@ -189,8 +190,12 @@ const CanvasComponent: React.FC = () => {
         saveCurrentFrameData();
 
         if(frames.length < 22){
+            const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
+            if (!ctx) return;
             // Clear the canvas to make the new frame blank
-            clearCanvas(); // Ensures the canvas is blank for the new frame
+            ctx.clearRect(0, 0, canvasHeight, canvasWidth);
+            drawGrid(ctx)
+            
 
             const newFrameId = uuidv4();
             const canvas = canvasRef.current;
@@ -388,6 +393,7 @@ const CanvasComponent: React.FC = () => {
         if (!ctx) return;
 
         const userConfirm = confirm("Are you sure you want to clear the canvas?")
+        
 
         if(userConfirm){
             //clear the grid completly
@@ -398,6 +404,10 @@ const CanvasComponent: React.FC = () => {
     };
 
     const playAnimation = () => {
+        if (frames.length <= 1){
+            return;
+        }
+
         if (isPlaying) {
             stopAnimation();
             return;
@@ -501,12 +511,14 @@ const CanvasComponent: React.FC = () => {
                             className="bg-white p-6 rounded shadow-lg w-96 mx-auto mt-20"
                             overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
                         >
-                            <button className="quitModal" onClick={toggleSaveModel}><FaCaretUp /></button>
-                            <h2 className="flex items-center">Save your Loop!</h2>
-                            <form>
-                                <label>Title: <input className="title" onChange={(e: any) => setTitle(e.target.value)}></input></label>
-                                <button onClick={handleLoopSave} className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">Save Loop!</button>
-                            </form>
+                            <div>
+                                <button className="quitModal" onClick={toggleSaveModel}><FaCaretUp /></button>
+                                <h2 className="flex items-center">Save your Loop!</h2>
+                                <form>
+                                    <label>Title: <input className="title" onChange={(e: any) => setTitle(e.target.value)}></input></label>
+                                    <button onClick={(e: any) => handleLoopSave(e)} className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">Save Loop!</button>
+                                </form>
+                            </div>
                         </Modal>
                         
                     </div>
@@ -594,7 +606,11 @@ const CanvasComponent: React.FC = () => {
                         </div>
 
                         <div className="clear-erase flex flex-col items-start">
-                            <button className="clear" onClick={clearCanvas}>
+                            <button className="clear" onClick={() => {
+                                const userClearConfirm = confirm("Are you sure you want to clear the canvas?");
+                                if(userClearConfirm){
+                                    clearCanvas
+                                }}}>
                                 Clear
                             </button>
                             <button className="erase" 
@@ -607,21 +623,22 @@ const CanvasComponent: React.FC = () => {
                                 }}>
                                 Eraser
                             </button>
-                            <button onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                            
                         </div>
 
-                        <div>
-
-                            <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={toggleSaveModel}>
-                              Save Loop
-                            </button>
-                        </div>
                         <div className="left-right flex flex-col items-start space-y-2">
                             <button className="w-full sm:w-auto" onClick={togglePosition}>
                                 {isLeft ? "Right-Handed mode" : "Left-Handed mode"}
                             </button>
                         </div>
-                    </div>
+
+                        <div className={`saveLoopContainer`}>
+                            <button className="playAnim px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                            <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={toggleSaveModel}>
+                                Save Loop
+                            </button>
+                        </div>
+                    </div>  
                 </div>
             ) : (
                 <div>
