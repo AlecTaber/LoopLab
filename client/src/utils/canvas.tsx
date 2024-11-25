@@ -9,6 +9,8 @@ import socket from "./socket";
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
 
+
+
 // eslint-disable-next-line
 var canvasWidth = 500 | 0;
 // eslint-disable-next-line
@@ -36,6 +38,7 @@ const CanvasComponent: React.FC = () => {
     const [brushSize, setBrushSize] = useState(1);
 
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isLeft, setIsLeft] = useState(true);
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -113,6 +116,11 @@ const CanvasComponent: React.FC = () => {
         const valueInt = parseInt(value)
         setBrushSize(valueInt)
     };
+
+    const togglePosition = () => {
+        setIsLeft((prev) => !prev); // Toggle the boolean state
+    };
+    
 
     //add a new frame to the frames array
     const saveCurrentFrameData = async(): Promise<void> => {
@@ -403,6 +411,8 @@ const CanvasComponent: React.FC = () => {
         }
     }, [colorCode])
 
+    
+
     return (
         <div>
             {Auth.loggedIn() ? (
@@ -438,8 +448,11 @@ const CanvasComponent: React.FC = () => {
                         ></canvas>
                     </div>
 
-                    <div className="componentsContainer fixed left-3 top-20 p-4 px-4 py-2 bg-blue-400 text-white rounded shadow">
-                        <div className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
+                    <div className={`componentsContainer ${
+                                    isLeft ? "left-3" : "right-3"
+                                } top-3 transition-all duration-300`}
+                            >
+                        
                             <label>
                                 Brush Size:{" "}
                                 <input
@@ -449,38 +462,50 @@ const CanvasComponent: React.FC = () => {
                                     onChange={(e: any) => {
                                         handleBrushSizeChange(e);
                                     }}
-                                    className="brushSize"
+                                    className="brushSize w-full sm:w-auto"
                                 ></input>
                             </label>
-                        </div>
-
+                        
+                                
                         <div className="hexColorPicker p-3">
                             <HexColorPicker color={colorCode} onChange={changeColor} />
                         </div>
-
+                                
                         <div className="colorCodeContainer py-2">
-                            <label className="hex px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
+                            <label className="hex">
                                 Hex Code:{" "}
-                                <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
+                                <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode} className="w-full sm:w-auto"></input>
                             </label>
                         </div>
-
-                        <div className="clear-erase flex flex-col items-start">
-                            <button className="clear px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={clearCanvas}>
+                                
+                        <div className="clear-erase flex flex-col items-start space-y-2">
+                            <button className="clear w-full sm:w-auto" onClick={clearCanvas}>
                                 Clear
                             </button>
-                            <button className="erase px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={() => setClear(true)}>
+                            <button className="erase w-full sm:w-auto" onClick={() => setClear(true)}>
                                 Eraser
                             </button>
-                            <button className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                            <button className="w-full sm:w-auto" onClick={playAnimation}>
+                                {isPlaying ? "Stop" : "Play"} Animation
+                            </button>
                         </div>
 
-                        <div>
-                        <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={handleLoopSave}>
-                        Save Loop
+                        <button className="saveLoop w-full sm:w-auto" onClick={handleLoopSave}>
+                            Save Loop
+                        </button>
+
+                        
+                                
+                            
+                            
+                        <div className="left-right flex flex-col items-start space-y-2">
+                            <button className="w-full sm:w-auto" onClick={togglePosition}>
+                                {isLeft ? "Right Handed" : "Left Handed"}
                             </button>
                         </div>
                     </div>
+                        
+                    
                 </div>
             ) : (
                 <div>
@@ -493,5 +518,7 @@ const CanvasComponent: React.FC = () => {
     );
 
 }
+
+
 
 export default CanvasComponent
