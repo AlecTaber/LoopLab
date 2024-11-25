@@ -62,7 +62,10 @@ const LoopResolvers = {
                     .populate("comments")
                     .populate("likes")
                     .sort({ createdAt: -1 });
-                return loops;
+                    return loops.map(loop => ({
+                        ...loop.toObject(),
+                        likeCount: loop.likes.length // Calculate likeCount dynamically if not stored
+                    }));
             } catch (error) {
                 console.error("Error fetching loops for user ${userId}:", error);
                 throw new Error("Failed to fetch loops by user");

@@ -32,7 +32,7 @@ const ProfilePage: React.FC = () => {
     useEffect(() => {
         console.log("Fetched comments updated:", fetchedComments);
     }, [fetchedComments]);
-    
+
     useEffect(() => {
         console.log("Loop to view comments updated:", loopToViewComments);
     }, [loopToViewComments]);
@@ -280,9 +280,14 @@ const ProfilePage: React.FC = () => {
                             </button>
 
                             {/* Likes Button */}
-                            <button className="flex items-center justify-center w-12 h-12 bg-white text-indigo-500 rounded-full shadow-md hover:bg-gray-200">
-                                <FaHeart size={24} />
-                            </button>
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    className="flex items-center justify-center w-12 h-12 bg-white text-red-500 rounded-full shadow-md hover:bg-gray-200"
+                                >
+                                    <FaHeart size={24} />
+                                </button>
+                                <span className="text-sm font-bold">{loop.likeCount || 0}</span>
+                            </div>
 
                             {/* Trash Button */}
                             <button
