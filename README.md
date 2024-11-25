@@ -65,7 +65,7 @@ To test this application, use the npm run test command in your terminal. It will
 - Email: [alectaber12@gmail.com](mailto:alectaber12@gmail.com)
 
 - GitHub: [yoseph1618](https://github.com/yoseph1618)
-- Email: [yoseph16181@gmail.com] (mailto:yoseph16181@gmail.com)
+- Email: [yoseph16181@gmail.com](mailto:yoseph16181@gmail.com)
 
 - GitHub: Joshua
 - Email: 

@@ -539,7 +539,7 @@ const CanvasComponent: React.FC = () => {
             </div>
             {Auth.loggedIn() ? (
                 <div className="canvasComponentContainer">
-                    <div className="framesContainer fixed top-20 p-4 py-2">
+                    <div className="framesContainer fixed top-[7%] left-[37%] right-[2%] transform -translate-y-1/2 p-4 bg-white rounded-lg shadow-lg max-w-[96%] max-h-[90vh] overflow-y-auto z-1">
                         {frames.map((frame, index) => (
                             <button key={`${frame.id}-${index}`} className="frames" onClick={async () => await switchFrame(index)} disabled={isPlaying}>
                                 {frame.canvasImg && (
@@ -619,14 +619,14 @@ const CanvasComponent: React.FC = () => {
                         </div>
 
                         <div className="clear-erase flex flex-col items-start">
-                            <button className="clear" onClick={() => {
+                            <button className="clear hover:text-yellow-500" onClick={() => {
                                 const userClearConfirm = confirm("Are you sure you want to clear the canvas?");
                                 if(userClearConfirm){
                                     clearCanvas();
                                 }}}>
                                 Clear
                             </button>
-                            <button className="erase" 
+                            <button className="erase hover:text-yellow-500" 
                                 onClick={() => {
                                     if(!isClear){
                                         setClear(true);
@@ -636,21 +636,18 @@ const CanvasComponent: React.FC = () => {
                                 }}>
                                 Eraser
                             </button>
-                            
-                        </div>
-
-                        <div className="left-right flex flex-col items-start space-y-2">
-                            <button className="w-full sm:w-auto" onClick={togglePosition}>
+                            <button className="w-full sm:w-auto hover:text-yellow-500" onClick={togglePosition}>
                                 {isLeft ? "Right-Handed mode" : "Left-Handed mode"}
                             </button>
-                        </div>
-
-                        <div className={`saveLoopContainer`}>
-                            <button className="playAnim px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
-                            <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={toggleSaveModel}>
+                            <button className="playAnim w-full sm:w-auto hover:text-yellow-500" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                            <button className="saveLoop w-full sm:w-auto hover:text-yellow-500" onClick={toggleSaveModel}>
                                 Save Loop
                             </button>
                         </div>
+
+                        
+
+                        
                     </div>  
                 </div>
             ) : (
