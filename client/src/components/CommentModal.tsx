@@ -42,7 +42,7 @@ const CommentModal: React.FC<ModalProps> = ({ isOpen, onClose, onSubmit }) => {
                         Cancel
                     </button>
                     <button
-                        className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"
+                        className="submit bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"
                         onClick={handleSubmit}
                     >
                         Submit
