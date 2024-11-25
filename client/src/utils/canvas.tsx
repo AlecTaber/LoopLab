@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
-import { FaRegPlusSquare, FaRegMinusSquare } from "react-icons/fa";
+import { FaRegPlusSquare, FaRegMinusSquare, FaCaretUp} from "react-icons/fa";
 import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
 import { SAVE_LOOP } from "./mutations";
@@ -7,6 +7,7 @@ import Auth from "./auth.js";
 import "../pages/canvasPage.css";
 import socket from "./socket";
 import {colorsA} from './canvasTools/canvasColors.js';
+import Modal from "react-modal";
 
 import { v4 as uuidv4 } from "uuid";
 import uploadToCloudinary from "./uploadToCloudinary";
@@ -15,6 +16,8 @@ import uploadToCloudinary from "./uploadToCloudinary";
 var canvasWidth = 500 | 0;
 // eslint-disable-next-line
 var canvasHeight = 500 | 0;
+
+Modal.setAppElement('#root')
 
 //should update the page depending on which pixel was clicked on.
 const CanvasComponent: React.FC = () => {
@@ -41,13 +44,26 @@ const CanvasComponent: React.FC = () => {
     const [brushSize, setBrushSize] = useState(1);
 
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isLeft, setIsLeft] = useState(true);
     const [animationSpeed, _setAnimationSpeed] = useState(200); // Animation speed in ms
     const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+    const [isSaveModalOpen, setModelOpenClose] = useState(false)
     const [saveLoop] = useMutation(SAVE_LOOP)
+    const [title, setTitle] = useState("title")
 
 
-    const handleLoopSave = async () => {
+    const toggleSaveModel = () => {
+        setModelOpenClose(!isSaveModalOpen)
+    }
+
+    const handleLoopSave = async (e: SubmitEvent) => {
+        e.preventDefault()
+        const userConfirm = confirm("Are you sure you want to save?")
+        if(!userConfirm){
+            return
+        };
+
         try {
             await saveCurrentFrameData();
             const updatedFrames = await Promise.all(
@@ -84,16 +100,17 @@ const CanvasComponent: React.FC = () => {
                 canvasImg: frame.canvasImg,
             }));
 
-            const title = `My Loop - ${new Date().toLocaleString()}`;
-            console.log('Payload for save loop mutation:', { title, frames: validFrames });
+            const updatedTitle = `${title} - ${new Date().toLocaleString()}`;
+            console.log('Payload for save loop mutation:', { title: updatedTitle, frames: validFrames });
             const { data } = await saveLoop({
-                variables: { input: { title, frames: formattedFrames } },
+                variables: { input: { title: updatedTitle, frames: formattedFrames } },
             });
 
             console.log('Loop saved successfully:', data.saveLoop);
 
             // Emit the new loop event via Socket.io
             socket.emit("newLoop", data.saveLoop);
+
 
         } catch (err) {
             console.error('Failed to save loop:', err);
@@ -173,8 +190,12 @@ const CanvasComponent: React.FC = () => {
         saveCurrentFrameData();
 
         if(frames.length < 22){
+            const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
+            if (!ctx) return;
             // Clear the canvas to make the new frame blank
-            clearCanvas(); // Ensures the canvas is blank for the new frame
+            ctx.clearRect(0, 0, canvasHeight, canvasWidth);
+            drawGrid(ctx)
+            
 
             const newFrameId = uuidv4();
             const canvas = canvasRef.current;
@@ -371,13 +392,22 @@ const CanvasComponent: React.FC = () => {
         const ctx = canvasRef.current?.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
-        //clear the grid completly
-        ctx.clearRect(0, 0, canvasHeight, canvasWidth);
-        //redraw the grid
-        drawGrid(ctx)
+        const userConfirm = confirm("Are you sure you want to clear the canvas?")
+        
+
+        if(userConfirm){
+            //clear the grid completly
+            ctx.clearRect(0, 0, canvasHeight, canvasWidth);
+            //redraw the grid
+            drawGrid(ctx)
+        }
     };
 
     const playAnimation = () => {
+        if (frames.length <= 1){
+            return;
+        }
+
         if (isPlaying) {
             stopAnimation();
             return;
@@ -465,8 +495,35 @@ const CanvasComponent: React.FC = () => {
         }
     }, [colorCode])
 
+    // set togglePosition to be right handed first
+    const togglePosition = () => {
+        setIsLeft((prev) => !prev); // Toggle the boolean state
+    };
+
     return (
         <div>
+            <div>
+                {isSaveModalOpen && (
+                    <div className="absolute bg-white shadow-md rounded-lg mt-2 border border-gray-300 z-20 flex items-center justify-center">
+                        <Modal
+                            isOpen={isSaveModalOpen}
+                            onRequestClose={toggleSaveModel}
+                            className="bg-white p-6 rounded shadow-lg w-96 mx-auto mt-20"
+                            overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+                        >
+                            <div>
+                                <button className="quitModal" onClick={toggleSaveModel}><FaCaretUp /></button>
+                                <h2 className="flex items-center">Save your Loop!</h2>
+                                <form>
+                                    <label>Title: <input className="title" onChange={(e: any) => setTitle(e.target.value)}></input></label>
+                                    <button onClick={(e: any) => handleLoopSave(e)} className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">Save Loop!</button>
+                                </form>
+                            </div>
+                        </Modal>
+                        
+                    </div>
+                )}
+            </div>
             {Auth.loggedIn() ? (
                 <div className="canvasComponentContainer">
                     <div className="framesContainer fixed top-20 p-4 py-2">
@@ -501,8 +558,13 @@ const CanvasComponent: React.FC = () => {
                         ></canvas>
                     </div>
 
-                    <div className="componentsContainer fixed left-3 top-20 p-4 px-4 py-2 bg-blue-400 text-white rounded shadow">
-                        <div className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
+                    
+                    <div className={`componentsContainer ${
+                                    isLeft ? "left-3" : "right-3"
+                                } top-3 transition-all duration-300`}
+                            >
+
+                        <div>
                             <label>
                                 Brush Size:{" "}
                                 <input
@@ -537,17 +599,21 @@ const CanvasComponent: React.FC = () => {
                         </div>
 
                         <div className="colorCodeContainer py-2">
-                            <label className="hex px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
+                            <label className="hex">
                                 Hex Code:{" "}
                                 <input type="text" name="colorCode" value={colorCode || ""} onChange={changeColorCode}></input>
                             </label>
                         </div>
 
                         <div className="clear-erase flex flex-col items-start">
-                            <button className="clear px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={clearCanvas}>
+                            <button className="clear" onClick={() => {
+                                const userClearConfirm = confirm("Are you sure you want to clear the canvas?");
+                                if(userClearConfirm){
+                                    clearCanvas
+                                }}}>
                                 Clear
                             </button>
-                            <button className="erase px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" 
+                            <button className="erase" 
                                 onClick={() => {
                                     if(!isClear){
                                         setClear(true);
@@ -557,15 +623,22 @@ const CanvasComponent: React.FC = () => {
                                 }}>
                                 Eraser
                             </button>
-                            <button className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                            
                         </div>
 
-                        <div>
-                            <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={handleLoopSave}>
-                            Save Loop
-                                </button>
+                        <div className="left-right flex flex-col items-start space-y-2">
+                            <button className="w-full sm:w-auto" onClick={togglePosition}>
+                                {isLeft ? "Right-Handed mode" : "Left-Handed mode"}
+                            </button>
                         </div>
-                    </div>
+
+                        <div className={`saveLoopContainer`}>
+                            <button className="playAnim px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
+                            <button className="saveLoop px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600" onClick={toggleSaveModel}>
+                                Save Loop
+                            </button>
+                        </div>
+                    </div>  
                 </div>
             ) : (
                 <div>
@@ -573,8 +646,6 @@ const CanvasComponent: React.FC = () => {
                 </div>
             )}
         </div>
-
-
     );
 
 }

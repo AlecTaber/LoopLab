@@ -42,23 +42,29 @@ const commentResolvers = {
             }
         },
 
-        getCommentsByLoop: async (_: any, { _id }: LoopArgs) => {
+        getCommentsByLoop: async (_: unknown, { _id }: LoopArgs) => {
             try {
-                const loop = await Loop.findById(_id).populate({
-                    path: 'comments',
-                    populate: { path: 'userId', select: 'username' }, // Populate userId with username
-                });
-        
-                if (!loop) {
-                    throw new Error("Loop not found!");
-                }
-                console.log("Fetched comments:", loop.comments); // Log the comments
-                return loop.comments; // Ensure comments are returned with populated username
+              const loop = await Loop.findById(_id).populate({
+                path: 'comments',
+                populate: { path: 'userId', select: 'username email' }, // Populate user details
+              });
+      
+              if (!loop) {
+                throw new Error("Loop not found");
+              }
+      
+              // Map comments to ensure the response includes proper fields
+              return loop.comments.map((comment: any) => ({
+                _id: comment._id,
+                body: comment.body,
+                userId: comment.userId._id.toString(), // Ensure userId is a string
+                username: comment.userId.username, // Add username explicitly
+              }));
             } catch (error) {
-                console.error("Error getting comments from loop!", error);
-                throw new Error("Error getting comments by Loop");
+              console.error("Error fetching comments:", error);
+              throw new Error("Error fetching comments by loop");
             }
-        },
+          },
     },
 
     Mutation: {

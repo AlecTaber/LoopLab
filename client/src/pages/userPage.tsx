@@ -71,7 +71,7 @@ const UserPage: React.FC = () => {
         <div className="user-page-container min-h-screen bg-blue-100 p-4 flex flex-col gap-6">
             <div className='relative inline-flex'>
                 <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-300 p-3 items-center">
-                    <h1 className="text-2xl font-bold">{userData?.getUserById.username}</h1>
+                    <h1 className="text-2xl font-bold text-indigo-600">{userData?.getUserById.username}</h1>
                 </div>
             </div>
 

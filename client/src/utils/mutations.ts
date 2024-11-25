@@ -71,3 +71,11 @@ mutation AddLikeToLoop($_id: ID!) {
     }
 }
 `;
+
+export const DELETE_LOOP = gql`
+  mutation DeleteLoop($_id: ID!) {
+    deleteLoop(_id: $_id) {
+      _id
+    }
+  }
+`;
