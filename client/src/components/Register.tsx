@@ -23,7 +23,7 @@ const Register: React.FC = () => {
     const [isError, setIsError] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    const GRAPHQL_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001/graphql';
+    const GRAPHQL_URL = import.meta.env.VITE_SOCKET_URL || 'https://looplab.onrender.com/graphql';
 
     const registerUser = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
