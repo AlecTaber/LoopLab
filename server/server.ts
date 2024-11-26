@@ -12,6 +12,12 @@ import dotenv from 'dotenv';
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 
 import { verifyToken } from './utils/jwt.js';
+import path from 'path';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 
@@ -92,6 +98,11 @@ const apolloServer = new ApolloServer({
 // Start the Apollo Server and apply it to the Express app
 (async function startServer() {
   await apolloServer.start();
+
+
+  app.use(express.static(path.join(__dirname, '../../client/dist')));
+
+
   apolloServer.applyMiddleware({ app, path: '/graphql' });
   const PORT: number = parseInt(process.env.PORT || '3001', 10);
   httpServer.listen(PORT, () => {
