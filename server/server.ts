@@ -99,9 +99,9 @@ const apolloServer = new ApolloServer({
 (async function startServer() {
   await apolloServer.start();
 
-  if (process.env.NODE_ENV === 'production') {
+
   app.use(express.static(path.join(__dirname, '../../client/dist')));
-  }
+
 
   apolloServer.applyMiddleware({ app, path: '/graphql' });
   const PORT: number = parseInt(process.env.PORT || '3001', 10);
