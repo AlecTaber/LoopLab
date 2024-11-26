@@ -34,6 +34,8 @@ connection();
 
 const httpServer = createServer(app);
 
+  app.use(express.static(path.join(__dirname, '../../client/dist')));
+
 
 // Export the io instance
 export const io = new Server(httpServer, {
@@ -100,7 +102,7 @@ const apolloServer = new ApolloServer({
   await apolloServer.start();
 
 
-  app.use(express.static(path.join(__dirname, '../../client/dist')));
+  // app.use(express.static(path.join(__dirname, '../../client/dist')));
 
 
   apolloServer.applyMiddleware({ app, path: '/graphql' });
