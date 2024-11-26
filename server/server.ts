@@ -37,6 +37,8 @@ connection();
 
 const httpServer = createServer(app);
 
+  app.use(express.static(path.join(__dirname, '../../client/dist')));
+
 
 // Export the io instance
 export const io = new Server(httpServer, {
@@ -101,6 +103,9 @@ const apolloServer = new ApolloServer({
 // Start the Apollo Server and apply it to the Express app
 (async function startServer() {
   await apolloServer.start();
+
+
+  // app.use(express.static(path.join(__dirname, '../../client/dist')));
 
   apolloServer.applyMiddleware({ app, path: '/graphql' });
   const PORT: number = parseInt(process.env.PORT || '3001', 10);
