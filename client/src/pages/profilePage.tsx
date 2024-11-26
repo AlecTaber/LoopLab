@@ -83,7 +83,7 @@ const ProfilePage: React.FC = () => {
 
 
     const logout = () => {
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
         navigate('/login');
     };
 
