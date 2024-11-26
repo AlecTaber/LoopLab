@@ -23,7 +23,7 @@ const Register: React.FC = () => {
     const [isError, setIsError] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    const GRAPHQL_URL = import.meta.env.VITE_BACKEND_URL || 'localhost:3001/graphql';
+    const GRAPHQL_URL = `${import.meta.env.VITE_BACKEND_URL}/graphql` || 'http://localhost:3001/graphql';
 
     const registerUser = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
