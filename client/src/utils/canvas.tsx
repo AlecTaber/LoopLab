@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, ChangeEvent } from "react"
-import { FaRegPlusSquare, FaRegMinusSquare, FaCaretUp} from "react-icons/fa";
+import { FaRegPlusSquare, FaCaretUp} from "react-icons/fa";
 import { useMutation } from '@apollo/client';
 import { HexColorPicker } from "react-colorful";
 import { SAVE_LOOP } from "./mutations";
@@ -53,7 +53,7 @@ const CanvasComponent: React.FC = () => {
     const [title, setTitle] = useState("title")
 
 
-    const toggleSaveModel = () => {
+    const toggleSaveModal = () => {
         setModelOpenClose(!isSaveModalOpen)
     }
 
@@ -221,6 +221,9 @@ const CanvasComponent: React.FC = () => {
                 }, 'image/png');
 
                 console.log(frames);
+
+                //close the modal after
+                toggleSaveModal();
             }
         } else {
             alert("Cannot have more than 22 frames!")
@@ -520,12 +523,12 @@ const CanvasComponent: React.FC = () => {
                     <div className="absolute bg-white shadow-md rounded-lg mt-2 border border-gray-300 z-20 flex items-center justify-center">
                         <Modal
                             isOpen={isSaveModalOpen}
-                            onRequestClose={toggleSaveModel}
+                            onRequestClose={toggleSaveModal}
                             className="bg-white p-6 rounded shadow-lg w-96 mx-auto mt-20"
                             overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
                         >
                             <div>
-                                <button className="quitModal" onClick={toggleSaveModel}><FaCaretUp /></button>
+                                <button className="quitModal" onClick={toggleSaveModal}><FaCaretUp /></button>
                                 <h2 className="flex items-center">Save your Loop!</h2>
                                 <form>
                                     <label>Title: <input className="title" onChange={(e: any) => setTitle(e.target.value)}></input></label>
@@ -574,7 +577,7 @@ const CanvasComponent: React.FC = () => {
                     
                     <div className={`componentsContainer ${
                                     isLeft ? "left-3" : "right-3"
-                                } top-3 transition-all duration-300`}
+                                } top-3 transition-all duration-300 sm: will-change-auto`}
                             >
 
                         <div>
@@ -640,7 +643,7 @@ const CanvasComponent: React.FC = () => {
                                 {isLeft ? "Right-Handed mode" : "Left-Handed mode"}
                             </button>
                             <button className="playAnim w-full sm:w-auto hover:text-yellow-500" onClick={playAnimation}>{isPlaying ? "Stop" : "Play"} Animation</button>
-                            <button className="saveLoop w-full sm:w-auto hover:text-yellow-500" onClick={toggleSaveModel}>
+                            <button className="saveLoop w-full sm:w-auto hover:text-yellow-500" onClick={toggleSaveModal}>
                                 Save Loop
                             </button>
                         </div>
