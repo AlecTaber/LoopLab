@@ -2,8 +2,6 @@ input {
   color: black;
 }
 
-
-
 .responsive-canvas {
   display: flex;
   justify-content: center;
@@ -33,6 +31,10 @@ input {
   border-radius: 5px;
   overflow: auto;
 }
+/* 
+@media (max-width: 1080px){
+  .
+} */
 
 /*controls the css for frames on the page */
 .frames {
@@ -49,9 +51,10 @@ input {
 .componentsContainer {
   position: absolute;
   top: 5rem; /* Top 20 in Tailwind (20 * 0.25rem) */
-  width: 25%; /* sm:w-1/4 */
-  max-width: 16rem; /* max-w-xs in Tailwind (16 * 1rem) */
-  max-height: 50%;
+  width: 45%; /* sm:w-1/4 */
+  max-width: 26rem; /* max-w-xs in Tailwind (16 * 1rem) */
+  font-size: 20px;
+  max-height: 60%;
   padding: 0.5rem; /* p-4 translates to px-4 and py-2 */
   padding-left: 1rem; /* px-4 */
   padding-right: 1rem; /* px-4 */
@@ -64,6 +67,15 @@ input {
   overflow: auto; /* overflow-auto */
   transition: all 0.3s ease;
 }
+
+/* @media (max-width: 1920px){
+  .componentsContainer {
+    max-width: 26rem;
+    font-size: 20px;
+    max-height: 60%;
+
+  }
+} */
 
 .left-3 {
   left: 2%;
