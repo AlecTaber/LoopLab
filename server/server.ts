@@ -23,6 +23,9 @@ dotenv.config();
 
 const app: Application = express();
 
+app.use(express.static(path.join(__dirname, '../../client/dist')));
+
+
 //set max file size and file limit
 app.use(graphqlUploadExpress({
   maxFileSize: 500 * 1024 * 1024,
@@ -98,10 +101,6 @@ const apolloServer = new ApolloServer({
 // Start the Apollo Server and apply it to the Express app
 (async function startServer() {
   await apolloServer.start();
-
-
-  app.use(express.static(path.join(__dirname, '../../client/dist')));
-
 
   apolloServer.applyMiddleware({ app, path: '/graphql' });
   const PORT: number = parseInt(process.env.PORT || '3001', 10);
