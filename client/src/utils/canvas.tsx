@@ -577,7 +577,7 @@ const CanvasComponent: React.FC = () => {
                     
                     <div className={`componentsContainer ${
                                     isLeft ? "left-3" : "right-3"
-                                } top-3 transition-all duration-300`}
+                                } top-3 transition-all duration-300 sm: will-change-auto`}
                             >
 
                         <div>
