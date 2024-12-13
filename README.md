@@ -149,6 +149,6 @@ Email: [yoseph16181@gmail.com](mailto:yoseph16181@gmail.com)
 ---
 
 **Joshua Pruitt**<br>
-GitHub: Joshua<br>
-Email: 
+GitHub: [JoshuaPruitt](https://github.com/JoshuaPruitt)<br>
+Email: [Joshuapruitt6484@gmail.com](mailto:joshuapruitt6484@gmail.com)
 
